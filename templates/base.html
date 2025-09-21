@@ -18,12 +18,21 @@
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'error' if category == 'error' else category }}">
-                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
+                <div class="flash-messages">
+                    {% set last_messages = {} %}
+                    {% for category, message in messages %}
+                        {% set _ = last_messages.update({category: message}) %}
+                    {% endfor %}
+                    {% for category, message in last_messages.items() %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else category }} flash-message">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
+                            {{ message }}
+                            <button type="button" class="close-flash" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
 
@@ -31,5 +40,34 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Auto-ocultar mensajes flash después de 5 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            
+            // Limpiar mensajes duplicados
+            const seenMessages = new Set();
+            flashMessages.forEach(function(message) {
+                const messageText = message.textContent.trim();
+                if (seenMessages.has(messageText)) {
+                    message.remove();
+                } else {
+                    seenMessages.add(messageText);
+                }
+            });
+            
+            // Auto-ocultar mensajes restantes
+            const remainingMessages = document.querySelectorAll('.flash-message');
+            remainingMessages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateY(-20px)';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>

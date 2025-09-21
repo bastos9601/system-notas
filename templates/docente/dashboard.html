@@ -73,9 +73,17 @@
                         <td>{{ materia.nombre }}</td>
                         <td>{{ materia.codigo }}</td>
                         <td>
-                            <span class="badge badge-primary">
-                                <i class="fas fa-check"></i> Activa
-                            </span>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('editar_materia', materia_id=materia.id) }}" 
+                                   class="btn btn-sm btn-warning" title="Editar materia">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        onclick="confirmarEliminar({{ materia.id }}, '{{ materia.nombre }}')" 
+                                        title="Eliminar materia">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -103,6 +111,18 @@
                     <div class="materia-card-field">
                         <div class="materia-card-label">Estado</div>
                         <div class="materia-card-value">Activa</div>
+                    </div>
+                </div>
+                <div class="materia-card-footer">
+                    <div class="btn-group w-100" role="group">
+                        <a href="{{ url_for('editar_materia', materia_id=materia.id) }}" 
+                           class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                onclick="confirmarEliminar({{ materia.id }}, '{{ materia.nombre }}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -249,5 +269,19 @@ document.addEventListener('keydown', function(event) {
         closeMenu();
     }
 });
+
+// Función para confirmar eliminación de materia
+function confirmarEliminar(materiaId, materiaNombre) {
+    if (confirm(`¿Estás seguro de que quieres eliminar la materia "${materiaNombre}"?\n\nEsta acción eliminará también todas las notas asociadas a esta materia y no se puede deshacer.`)) {
+        // Crear formulario para enviar la solicitud de eliminación
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/docente/eliminar_materia/${materiaId}`;
+        
+        // Agregar el formulario al DOM y enviarlo
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
 </script>
 {% endblock %}
