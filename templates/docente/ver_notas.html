@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Ver Notas de Mis Estudiantes{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title"><i class="fas fa-chart-line"></i> Notas de Mis Estudiantes</h1>
+    <div class="user-info">
+        <span><i class="fas fa-user"></i> {{ session.username }}</span>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger desktop-logout">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
+    </div>
+</div>
+
+<!-- Botón hamburguesa -->
+<button class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- Overlay para cerrar menú -->
+<div class="nav-overlay" onclick="closeMenu()"></div>
+
+<!-- Menú de navegación -->
+<div class="nav" id="navMenu">
+    <a href="{{ url_for('docente_dashboard') }}" onclick="closeMenu()">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    <a href="{{ url_for('agregar_nota') }}" onclick="closeMenu()">
+        <i class="fas fa-plus"></i> Agregar Nota
+    </a>
+    <a href="{{ url_for('crear_materia') }}" onclick="closeMenu()">
+        <i class="fas fa-book"></i> Crear Materia
+    </a>
+    <a href="{{ url_for('docente_ver_notas') }}" onclick="closeMenu()">
+        <i class="fas fa-chart-line"></i> Ver Notas
+    </a>
+    <a href="{{ url_for('logout') }}" onclick="closeMenu()" class="nav-logout">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </a>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-chart-line"></i> Calificaciones de Mis Materias</h2>
+    
+    {% if notas %}
+    <!-- Tabla para desktop -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Alumno</th>
+                    <th>DNI</th>
+                    <th>Ciclo</th>
+                    <th>Materia</th>
+                    <th>Evaluación</th>
+                    <th>Nota</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Observaciones</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota, alumno, materia in notas %}
+                <tr>
+                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                    <td>{{ alumno.dni }}</td>
+                    <td>
+                        <span class="badge badge-success" style="font-size: 14px; padding: 8px 12px;">
+                            {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
+                        </span>
+                    </td>
+                    <td>{{ materia.nombre }}</td>
+                    <td>{{ nota.tipo_evaluacion }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                            {{ nota.nota }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                            {% if nota.nota >= 13 %}
+                                Aprobado
+                            {% elif nota.nota >= 10 %}
+                                Recuperación
+                            {% else %}
+                                Desaprobado
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>{{ nota.fecha.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ nota.observaciones or '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('editar_nota', nota_id=nota.id) }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminar('{{ nota.id }}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjetas para móvil -->
+    <div class="mobile-cards">
+        {% for nota, alumno, materia in notas %}
+        <div class="nota-card">
+            <div class="nota-card-header">
+                <div class="nota-card-title">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+                <div class="nota-card-badges">
+                    <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                        {{ nota.nota }}
+                    </span>
+                    <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                        {% if nota.nota >= 13 %}
+                            Aprobado
+                        {% elif nota.nota >= 10 %}
+                            Recuperación
+                        {% else %}
+                            Desaprobado
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="nota-card-body">
+                <div class="nota-card-field">
+                    <div class="nota-card-label">DNI</div>
+                    <div class="nota-card-value">{{ alumno.dni }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Ciclo</div>
+                    <div class="nota-card-value">
+                        <span class="badge badge-success" style="font-size: 12px; padding: 4px 8px;">
+                            {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Materia</div>
+                    <div class="nota-card-value">{{ materia.nombre }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Evaluación</div>
+                    <div class="nota-card-value">{{ nota.tipo_evaluacion }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Fecha</div>
+                    <div class="nota-card-value">{{ nota.fecha.strftime('%d/%m/%Y') }}</div>
+                </div>
+                {% if nota.observaciones %}
+                <div class="nota-card-observations">
+                    <div class="nota-card-label">Observaciones</div>
+                    <div class="nota-card-value">{{ nota.observaciones }}</div>
+                </div>
+                {% endif %}
+                <div class="nota-card-observations">
+                    <div class="nota-card-label">Acciones</div>
+                    <div class="nota-card-value">
+                        <a href="{{ url_for('editar_nota', nota_id=nota.id) }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminar('{{ nota.id }}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="stats-summary">
+        <div class="grid grid-4">
+            <div class="stats-card">
+                <h3>{{ notas|length }}</h3>
+                <p><i class="fas fa-chart-line"></i> Total de Notas</p>
+            </div>
+            <div class="stats-card">
+                <h3>{{ notas|selectattr('0.nota', 'ge', 13)|list|length }}</h3>
+                <p><i class="fas fa-check-circle"></i> Notas Aprobadas (≥13)</p>
+            </div>
+            <div class="stats-card">
+                <h3>{{ notas|selectattr('0.nota', 'ge', 10)|selectattr('0.nota', 'lt', 13)|list|length }}</h3>
+                <p><i class="fas fa-exclamation-triangle"></i> Recuperación (10-12)</p>
+            </div>
+            <div class="stats-card">
+                <h3>{{ notas|selectattr('0.nota', 'ge', 5)|selectattr('0.nota', 'lt', 10)|list|length }}</h3>
+                <p><i class="fas fa-times-circle"></i> Desaprobadas (5-9)</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No hay notas registradas para tus materias.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function confirmarEliminar(notaId) {
+    if (confirm('¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.')) {
+        // Crear formulario dinámico para enviar POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/docente/eliminar_nota/' + notaId;
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Funciones para el menú hamburguesa
+function toggleMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+function closeMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.remove('active');
+    hamburger.classList.remove('active');
+    overlay.classList.remove('active');
+}
+
+// Cerrar menú con tecla Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeMenu();
+    }
+});
+</script>
+
+{% endblock %}

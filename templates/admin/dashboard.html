@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title"><i class="fas fa-cogs"></i> Panel de Administración</h1>
+</div>
+
+<!-- Botón hamburguesa -->
+<button class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- Overlay para cerrar menú -->
+<div class="nav-overlay" onclick="closeMenu()"></div>
+
+<!-- Menú de navegación -->
+<div class="nav" id="navMenu">
+    <a href="{{ url_for('admin_dashboard') }}" onclick="closeMenu()">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    <a href="{{ url_for('crear_usuario') }}" onclick="closeMenu()">
+        <i class="fas fa-user-plus"></i> Crear Usuario
+    </a>
+    <a href="{{ url_for('registrar_alumno') }}" onclick="closeMenu()">
+        <i class="fas fa-user-graduate"></i> Registrar Alumno
+    </a>
+    <a href="{{ url_for('admin_ver_notas') }}" onclick="closeMenu()">
+        <i class="fas fa-chart-line"></i> Ver Notas
+    </a>
+    <a href="{{ url_for('logout') }}" onclick="closeMenu()" class="nav-logout">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </a>
+</div>
+
+<div class="grid grid-3">
+    <div class="stats-card">
+        <h3>{{ usuarios|length }}</h3>
+        <p><i class="fas fa-users"></i> Usuarios</p>
+    </div>
+    <div class="stats-card">
+        <h3>{{ alumnos|length }}</h3>
+        <p><i class="fas fa-user-graduate"></i> Alumnos</p>
+    </div>
+    <div class="stats-card">
+        <h3>{{ materias|length }}</h3>
+        <p><i class="fas fa-book"></i> Materias</p>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <h2><i class="fas fa-users"></i> Usuarios Registrados</h2>
+        
+        <!-- Buscador de usuarios -->
+        <div class="search-container" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="searchUsuario" style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">
+                    <i class="fas fa-search"></i> Buscar por usuario, email o tipo:
+                </label>
+                <input type="text" id="searchUsuario" class="form-control" placeholder="Ingresa usuario, email o tipo..." 
+                       style="width: 100%; max-width: 400px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+            </div>
+        </div>
+        
+        {% if usuarios %}
+        <!-- Tabla para desktop -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr class="usuario-row" data-username="{{ usuario.username }}" data-email="{{ usuario.email }}" data-tipo="{{ usuario.tipo }}">
+                        <td>{{ usuario.username }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'primary' if usuario.tipo == 'admin' else 'secondary' }}">
+                                {{ usuario.tipo.title() }}
+                            </span>
+                        </td>
+                        <td>{{ usuario.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <a href="{{ url_for('editar_usuario', usuario_id=usuario.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            {% if usuario.id != session.user_id %}
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarUsuario('{{ usuario.id }}', '{{ usuario.username }}', '{{ usuario.tipo }}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tarjetas para móvil -->
+        <div class="mobile-cards">
+            {% for usuario in usuarios %}
+            <div class="user-card usuario-row" data-username="{{ usuario.username }}" data-email="{{ usuario.email }}" data-tipo="{{ usuario.tipo }}">
+                <div class="user-card-header">
+                    <div class="user-card-title">{{ usuario.username }}</div>
+                    <span class="badge badge-{{ 'primary' if usuario.tipo == 'admin' else 'secondary' }} user-card-badge">
+                        {{ usuario.tipo.title() }}
+                    </span>
+                </div>
+                <div class="user-card-body">
+                    <div class="user-card-field">
+                        <div class="user-card-label">Email</div>
+                        <div class="user-card-value">{{ usuario.email }}</div>
+                    </div>
+                    <div class="user-card-field">
+                        <div class="user-card-label">Fecha</div>
+                        <div class="user-card-value">{{ usuario.fecha_creacion.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                </div>
+                <div class="user-card-actions" style="grid-column: 1 / -1; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px;">
+                    <a href="{{ url_for('editar_usuario', usuario_id=usuario.id) }}" class="btn btn-warning btn-sm" style="flex: 1; font-size: 0.8rem; padding: 6px 12px;">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    {% if usuario.id != session.user_id %}
+                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarUsuario('{{ usuario.id }}', '{{ usuario.username }}', '{{ usuario.tipo }}')" style="flex: 1; font-size: 0.8rem; padding: 6px 12px;">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No hay usuarios registrados.
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-user-graduate"></i> Alumnos Registrados</h2>
+        
+        <!-- Buscador de alumnos -->
+        <div class="search-container" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="searchAlumno" style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">
+                    <i class="fas fa-search"></i> Buscar por DNI:
+                </label>
+                <input type="text" id="searchAlumno" class="form-control" placeholder="Ingresa el DNI del alumno..." 
+                       style="width: 100%; max-width: 400px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+            </div>
+        </div>
+        
+        {% if alumnos %}
+        <!-- Tabla para desktop -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>DNI</th>
+                        <th>Ciclo</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alumno in alumnos %}
+                    <tr class="alumno-row" data-dni="{{ alumno.dni }}" data-nombre="{{ alumno.nombre }} {{ alumno.apellido }}">
+                        <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                        <td>{{ alumno.dni }}</td>
+                        <td>
+                            <span class="badge badge-success" style="font-size: 14px; padding: 8px 12px;">
+                                {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
+                            </span>
+                        </td>
+                        <td>{{ alumno.email or '-' }}</td>
+                        <td>{{ alumno.telefono or '-' }}</td>
+                        <td>{{ alumno.fecha_registro.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <a href="{{ url_for('editar_alumno', alumno_id=alumno.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarAlumno('{{ alumno.id }}', '{{ alumno.nombre }} {{ alumno.apellido }}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tarjetas para móvil -->
+        <div class="mobile-cards">
+            {% for alumno in alumnos %}
+            <div class="alumno-card alumno-row" data-dni="{{ alumno.dni }}" data-nombre="{{ alumno.nombre }} {{ alumno.apellido }}">
+                <div class="alumno-card-header">
+                    <div class="alumno-card-title">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+                    <div class="alumno-card-badges">
+                        <span class="badge badge-success" style="font-size: 12px; padding: 4px 8px;">
+                            {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="alumno-card-body">
+                    <div class="alumno-card-field">
+                        <div class="alumno-card-label">DNI</div>
+                        <div class="alumno-card-value">{{ alumno.dni }}</div>
+                    </div>
+                    <div class="alumno-card-field">
+                        <div class="alumno-card-label">Email</div>
+                        <div class="alumno-card-value">{{ alumno.email or '-' }}</div>
+                    </div>
+                    <div class="alumno-card-field">
+                        <div class="alumno-card-label">Teléfono</div>
+                        <div class="alumno-card-value">{{ alumno.telefono or '-' }}</div>
+                    </div>
+                    <div class="alumno-card-field">
+                        <div class="alumno-card-label">Fecha</div>
+                        <div class="alumno-card-value">{{ alumno.fecha_registro.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                </div>
+                <div class="alumno-card-actions">
+                    <a href="{{ url_for('editar_alumno', alumno_id=alumno.id) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarAlumno('{{ alumno.id }}', '{{ alumno.nombre }} {{ alumno.apellido }}')">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No hay alumnos registrados.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-book"></i> Materias Registradas</h2>
+    {% if materias %}
+    <!-- Tabla para desktop -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Código</th>
+                    <th>Docente</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for materia in materias %}
+                <tr>
+                    <td>{{ materia.nombre }}</td>
+                    <td>{{ materia.codigo }}</td>
+                    <td>{{ materia.docente.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjetas para móvil -->
+    <div class="mobile-cards">
+        {% for materia in materias %}
+        <div class="materia-card">
+            <div class="materia-card-header">
+                <div class="materia-card-title">{{ materia.nombre }}</div>
+                <div class="materia-card-badges">
+                    <span class="badge badge-primary" style="font-size: 12px; padding: 4px 8px;">
+                        {{ materia.codigo }}
+                    </span>
+                </div>
+            </div>
+            <div class="materia-card-body">
+                <div class="materia-card-field">
+                    <div class="materia-card-label">Código</div>
+                    <div class="materia-card-value">{{ materia.codigo }}</div>
+                </div>
+                <div class="materia-card-field">
+                    <div class="materia-card-label">Docente</div>
+                    <div class="materia-card-value">{{ materia.docente.username }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No hay materias registradas.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Funciones para el menú hamburguesa
+function toggleMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+function closeMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.remove('active');
+    hamburger.classList.remove('active');
+    overlay.classList.remove('active');
+}
+
+// Cerrar menú con tecla Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeMenu();
+    }
+});
+
+// Función para buscar alumnos por DNI
+function buscarAlumnos() {
+    const searchInput = document.getElementById('searchAlumno');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const alumnoRows = document.querySelectorAll('.alumno-row');
+    
+    let visibleCount = 0;
+    
+    alumnoRows.forEach(row => {
+        const dni = row.getAttribute('data-dni').toLowerCase();
+        const nombre = row.getAttribute('data-nombre').toLowerCase();
+        
+        // Buscar por DNI o por nombre
+        if (searchTerm === '' || dni.includes(searchTerm) || nombre.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    mostrarMensajeSinResultados(visibleCount === 0 && searchTerm !== '');
+}
+
+// Función para mostrar mensaje cuando no hay resultados
+function mostrarMensajeSinResultados(mostrar) {
+    let mensajeElement = document.getElementById('sin-resultados');
+    
+    if (mostrar) {
+        if (!mensajeElement) {
+            mensajeElement = document.createElement('div');
+            mensajeElement.id = 'sin-resultados';
+            mensajeElement.className = 'alert alert-warning';
+            mensajeElement.style.marginTop = '20px';
+            mensajeElement.innerHTML = '<i class="fas fa-search"></i> No se encontraron alumnos con ese DNI o nombre.';
+            
+            // Insertar después del buscador
+            const searchContainer = document.querySelector('.search-container');
+            searchContainer.parentNode.insertBefore(mensajeElement, searchContainer.nextSibling);
+        }
+        mensajeElement.style.display = 'block';
+    } else if (mensajeElement) {
+        mensajeElement.style.display = 'none';
+    }
+}
+
+// Función para buscar usuarios
+function buscarUsuarios() {
+    const searchInput = document.getElementById('searchUsuario');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const usuarioRows = document.querySelectorAll('.usuario-row');
+    
+    let visibleCount = 0;
+    
+    usuarioRows.forEach(row => {
+        const username = row.getAttribute('data-username').toLowerCase();
+        const email = row.getAttribute('data-email').toLowerCase();
+        const tipo = row.getAttribute('data-tipo').toLowerCase();
+        
+        // Buscar por username, email o tipo
+        if (searchTerm === '' || 
+            username.includes(searchTerm) || 
+            email.includes(searchTerm) || 
+            tipo.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    mostrarMensajeSinResultadosUsuarios(visibleCount === 0 && searchTerm !== '');
+}
+
+// Función para mostrar mensaje cuando no hay resultados de usuarios
+function mostrarMensajeSinResultadosUsuarios(mostrar) {
+    let mensajeElement = document.getElementById('sin-resultados-usuarios');
+    
+    if (mostrar) {
+        if (!mensajeElement) {
+            mensajeElement = document.createElement('div');
+            mensajeElement.id = 'sin-resultados-usuarios';
+            mensajeElement.className = 'alert alert-warning';
+            mensajeElement.style.marginTop = '20px';
+            mensajeElement.innerHTML = '<i class="fas fa-search"></i> No se encontraron usuarios con ese criterio de búsqueda.';
+            
+            // Insertar después del buscador de usuarios
+            const searchContainer = document.querySelector('#searchUsuario').closest('.search-container');
+            searchContainer.parentNode.insertBefore(mensajeElement, searchContainer.nextSibling);
+        }
+        mensajeElement.style.display = 'block';
+    } else if (mensajeElement) {
+        mensajeElement.style.display = 'none';
+    }
+}
+
+// Event listener para el campo de búsqueda de alumnos
+document.addEventListener('DOMContentLoaded', function() {
+    const searchAlumnoInput = document.getElementById('searchAlumno');
+    if (searchAlumnoInput) {
+        searchAlumnoInput.addEventListener('input', buscarAlumnos);
+        searchAlumnoInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                searchAlumnoInput.value = '';
+                buscarAlumnos();
+            }
+        });
+    }
+    
+    // Event listener para el campo de búsqueda de usuarios
+    const searchUsuarioInput = document.getElementById('searchUsuario');
+    if (searchUsuarioInput) {
+        searchUsuarioInput.addEventListener('input', buscarUsuarios);
+        searchUsuarioInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                searchUsuarioInput.value = '';
+                buscarUsuarios();
+            }
+        });
+    }
+});
+
+// Función para eliminar usuario
+function confirmarEliminarUsuario(usuarioId, nombreUsuario, tipoUsuario) {
+    let mensaje = `¿Estás seguro de que quieres eliminar al usuario "${nombreUsuario}"?\n\n`;
+    
+    if (tipoUsuario === 'docente') {
+        mensaje += `Esta acción eliminará:\n- El usuario docente\n- Todas sus materias\n- Todas las notas de sus materias\n\n`;
+    } else {
+        mensaje += `Esta acción eliminará:\n- El usuario administrador\n\n`;
+    }
+    
+    mensaje += `Esta acción no se puede deshacer.`;
+    
+    if (confirm(mensaje)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/eliminar_usuario/' + usuarioId;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Función para eliminar alumno
+function confirmarEliminarAlumno(alumnoId, nombreAlumno) {
+    if (confirm(`¿Estás seguro de que quieres eliminar al alumno "${nombreAlumno}"?\n\nEsta acción eliminará:\n- El alumno\n- Todas sus notas\n\nEsta acción no se puede deshacer.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/eliminar_alumno/' + alumnoId;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Usuario{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title"><i class="fas fa-user-plus"></i> Crear Usuario</h1>
+    <div class="user-info">
+        <span><i class="fas fa-user"></i> {{ session.username }}</span>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
+    </div>
+</div>
+
+<div class="nav">
+    <a href="{{ url_for('admin_dashboard') }}">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    <a href="{{ url_for('crear_usuario') }}">
+        <i class="fas fa-user-plus"></i> Crear Usuario
+    </a>
+    <a href="{{ url_for('registrar_alumno') }}">
+        <i class="fas fa-user-graduate"></i> Registrar Alumno
+    </a>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h2>
+    
+    <form action="{{ url_for('crear_usuario') }}" method="POST">
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="username">Nombre de Usuario:</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Ingresa el nombre de usuario" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="usuario@ejemplo.com" required>
+            </div>
+        </div>
+        
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Ingresa la contraseña" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tipo">Tipo de Usuario:</label>
+                <select id="tipo" name="tipo" class="form-control" required>
+                    <option value="">Selecciona el tipo</option>
+                    <option value="admin">Administrador</option>
+                    <option value="docente">Docente</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-10">
+            <button type="submit" class="btn btn-success" id="crearUsuarioBtn">
+                <i class="fas fa-save"></i> Crear Usuario
+            </button>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Script específico para el formulario de crear usuario
+    document.addEventListener('DOMContentLoaded', function() {
+        const crearUsuarioForm = document.querySelector('form[action="{{ url_for("crear_usuario") }}"]');
+        const crearUsuarioBtn = document.getElementById('crearUsuarioBtn');
+        
+        if (crearUsuarioForm && crearUsuarioBtn) {
+            crearUsuarioForm.addEventListener('submit', function(e) {
+                // Cambiar el botón a estado de carga
+                crearUsuarioBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                crearUsuarioBtn.disabled = true;
+                
+                // Permitir que el formulario se envíe normalmente
+                // No prevenir el envío con e.preventDefault()
+                
+                // Forzar el envío del formulario después de un pequeño delay
+                setTimeout(function() {
+                    if (crearUsuarioForm.checkValidity()) {
+                        crearUsuarioForm.submit();
+                    } else {
+                        // Si hay errores de validación, restaurar el botón
+                        crearUsuarioBtn.innerHTML = '<i class="fas fa-save"></i> Crear Usuario';
+                        crearUsuarioBtn.disabled = false;
+                    }
+                }, 100);
+            });
+        }
+    });
+</script>
+{% endblock %}

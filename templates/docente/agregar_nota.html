@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Nota{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title"><i class="fas fa-plus"></i> Agregar Nota</h1>
+    <div class="user-info">
+        <span><i class="fas fa-user"></i> {{ session.username }}</span>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger desktop-logout">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
+    </div>
+</div>
+
+<!-- Botón hamburguesa -->
+<button class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- Overlay para cerrar menú -->
+<div class="nav-overlay" onclick="closeMenu()"></div>
+
+<!-- Menú de navegación -->
+<div class="nav" id="navMenu">
+    <a href="{{ url_for('docente_dashboard') }}" onclick="closeMenu()">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    <a href="{{ url_for('agregar_nota') }}" onclick="closeMenu()">
+        <i class="fas fa-plus"></i> Agregar Nota
+    </a>
+    <a href="{{ url_for('crear_materia') }}" onclick="closeMenu()">
+        <i class="fas fa-book"></i> Crear Materia
+    </a>
+    <a href="{{ url_for('docente_ver_notas') }}" onclick="closeMenu()">
+        <i class="fas fa-chart-line"></i> Ver Notas
+    </a>
+    <a href="{{ url_for('logout') }}" onclick="closeMenu()" class="nav-logout">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </a>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-plus"></i> Registrar Nueva Nota</h2>
+    
+    <form action="{{ url_for('agregar_nota') }}" method="POST">
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="alumno_id">Alumno:</label>
+                <select id="alumno_id" name="alumno_id" class="form-control" required>
+                    <option value="">Selecciona un alumno</option>
+                    {% for alumno in alumnos %}
+                    <option value="{{ alumno.id }}">{{ alumno.nombre }} {{ alumno.apellido }} ({{ alumno.dni }}) - {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="materia_id">Materia:</label>
+                <select id="materia_id" name="materia_id" class="form-control" required>
+                    <option value="">Selecciona una materia</option>
+                    {% for materia in materias %}
+                    <option value="{{ materia.id }}">{{ materia.nombre }} ({{ materia.codigo }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="nota">Nota:</label>
+                <input type="number" id="nota" name="nota" class="form-control" 
+                       placeholder="0.0" step="0.1" min="0" max="20" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tipo_evaluacion">Tipo de Evaluación:</label>
+                <select id="tipo_evaluacion" name="tipo_evaluacion" class="form-control" required>
+                    <option value="">Selecciona el tipo</option>
+                    <option value="Parcial">Parcial</option>
+                    <option value="Final">Final</option>
+                    <option value="Trabajo Práctico">Trabajo Práctico</option>
+                    <option value="Examen">Examen</option>
+                    <option value="Participación">Participación</option>
+                    <option value="Proyecto">Proyecto</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="observaciones">Observaciones (Opcional):</label>
+            <textarea id="observaciones" name="observaciones" class="form-control" 
+                      rows="3" placeholder="Comentarios adicionales sobre la evaluación"></textarea>
+        </div>
+        
+        <div class="d-flex gap-10">
+            <button type="submit" class="btn btn-success" id="guardarNotaBtn">
+                <i class="fas fa-save"></i> Guardar Nota
+            </button>
+            <a href="{{ url_for('docente_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+{% if not materias %}
+<div class="card">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No tienes materias asignadas. <a href="{{ url_for('crear_materia') }}">Crear una materia</a> para poder agregar notas.
+    </div>
+</div>
+{% endif %}
+
+{% if not alumnos %}
+<div class="card">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No hay alumnos registrados en el sistema. Contacta al administrador.
+    </div>
+</div>
+{% endif %}
+
+<script>
+    // Script específico para el formulario de agregar nota
+    document.addEventListener('DOMContentLoaded', function() {
+        const agregarNotaForm = document.querySelector('form[action="{{ url_for("agregar_nota") }}"]');
+        const guardarNotaBtn = document.getElementById('guardarNotaBtn');
+        
+        if (agregarNotaForm && guardarNotaBtn) {
+            agregarNotaForm.addEventListener('submit', function(e) {
+                // Cambiar el botón a estado de carga
+                guardarNotaBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                guardarNotaBtn.disabled = true;
+                
+                // Permitir que el formulario se envíe normalmente
+                // NO enviar el formulario nuevamente con setTimeout
+            });
+        }
+    });
+
+    // Funciones para el menú hamburguesa
+    function toggleMenu() {
+        const nav = document.getElementById('navMenu');
+        const hamburger = document.querySelector('.hamburger');
+        const overlay = document.querySelector('.nav-overlay');
+        
+        nav.classList.toggle('active');
+        hamburger.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+
+    function closeMenu() {
+        const nav = document.getElementById('navMenu');
+        const hamburger = document.querySelector('.hamburger');
+        const overlay = document.querySelector('.nav-overlay');
+        
+        nav.classList.remove('active');
+        hamburger.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    // Cerrar menú con tecla Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeMenu();
+        }
+    });
+</script>
+{% endblock %}

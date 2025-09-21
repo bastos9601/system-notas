@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title"><i class="fas fa-user-edit"></i> Editar Usuario</h1>
+</div>
+
+<!-- Botón hamburguesa -->
+<button class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- Overlay para cerrar menú -->
+<div class="nav-overlay" onclick="closeMenu()"></div>
+
+<!-- Menú de navegación -->
+<div class="nav" id="navMenu">
+    <a href="{{ url_for('admin_dashboard') }}" onclick="closeMenu()">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    <a href="{{ url_for('crear_usuario') }}" onclick="closeMenu()">
+        <i class="fas fa-user-plus"></i> Crear Usuario
+    </a>
+    <a href="{{ url_for('registrar_alumno') }}" onclick="closeMenu()">
+        <i class="fas fa-user-graduate"></i> Registrar Alumno
+    </a>
+    <a href="{{ url_for('admin_ver_notas') }}" onclick="closeMenu()">
+        <i class="fas fa-chart-line"></i> Ver Notas
+    </a>
+    <a href="{{ url_for('logout') }}" onclick="closeMenu()" class="nav-logout">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </a>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-user-edit"></i> Editar Usuario: {{ usuario.username }}</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Nombre de Usuario:</label>
+            <input type="text" id="username" name="username" class="form-control" 
+                   value="{{ usuario.username }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" class="form-control" 
+                   value="{{ usuario.email }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="tipo">Tipo de Usuario:</label>
+            <select id="tipo" name="tipo" class="form-control" required>
+                <option value="admin" {% if usuario.tipo == 'admin' %}selected{% endif %}>Administrador</option>
+                <option value="docente" {% if usuario.tipo == 'docente' %}selected{% endif %}>Docente</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Nueva Contraseña (opcional):</label>
+            <input type="password" id="password" name="password" class="form-control" 
+                   placeholder="Dejar vacío para mantener la contraseña actual"
+                   minlength="4">
+            <small class="form-text text-muted">
+                <i class="fas fa-info-circle"></i> Solo completa este campo si quieres cambiar la contraseña. Mínimo 4 caracteres.
+            </small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Funciones para el menú hamburguesa
+function toggleMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+function closeMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.remove('active');
+    hamburger.classList.remove('active');
+    overlay.classList.remove('active');
+}
+
+// Cerrar menú con tecla Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeMenu();
+    }
+});
+
+// Validación del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const passwordField = document.getElementById('password');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const password = passwordField.value.trim();
+            
+            // Si se proporciona una contraseña, validar longitud
+            if (password && password.length < 4) {
+                e.preventDefault();
+                alert('La contraseña debe tener al menos 4 caracteres.');
+                passwordField.focus();
+                return false;
+            }
+            
+            // Confirmar si se está cambiando la contraseña
+            if (password) {
+                if (!confirm('¿Estás seguro de que quieres cambiar la contraseña?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

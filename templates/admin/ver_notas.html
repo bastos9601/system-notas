@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Ver Todas las Notas{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title"><i class="fas fa-chart-line"></i> Ver Todas las Notas</h1>
+</div>
+
+<!-- Botón hamburguesa -->
+<button class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- Overlay para cerrar menú -->
+<div class="nav-overlay" onclick="closeMenu()"></div>
+
+<!-- Menú de navegación -->
+<div class="nav" id="navMenu">
+    <a href="{{ url_for('admin_dashboard') }}" onclick="closeMenu()">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    <a href="{{ url_for('crear_usuario') }}" onclick="closeMenu()">
+        <i class="fas fa-user-plus"></i> Crear Usuario
+    </a>
+    <a href="{{ url_for('registrar_alumno') }}" onclick="closeMenu()">
+        <i class="fas fa-user-graduate"></i> Registrar Alumno
+    </a>
+    <a href="{{ url_for('admin_ver_notas') }}" onclick="closeMenu()">
+        <i class="fas fa-chart-line"></i> Ver Notas
+    </a>
+    <a href="{{ url_for('logout') }}" onclick="closeMenu()" class="nav-logout">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </a>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-chart-line"></i> Todas las Calificaciones del Sistema</h2>
+    
+    <!-- Buscador de notas -->
+    <div class="search-container" style="margin-bottom: 20px;">
+        <div class="form-group">
+            <label for="searchNota" style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">
+                <i class="fas fa-search"></i> Buscar por alumno, DNI, materia, docente, evaluación, nota o fecha:
+            </label>
+            <input type="text" id="searchNota" class="form-control" placeholder="Ingresa cualquier término de búsqueda..." 
+                   style="width: 100%; max-width: 500px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+        </div>
+    </div>
+    
+    {% if notas %}
+    <!-- Tabla para desktop -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Alumno</th>
+                    <th>DNI</th>
+                    <th>Ciclo</th>
+                    <th>Materia</th>
+                    <th>Docente</th>
+                    <th>Evaluación</th>
+                    <th>Nota</th>
+                    <th>Fecha</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota, alumno, materia in notas %}
+                <tr class="nota-row" 
+                    data-alumno="{{ alumno.nombre }} {{ alumno.apellido }}"
+                    data-dni="{{ alumno.dni }}"
+                    data-ciclo="{{ alumno.ciclo }}"
+                    data-materia="{{ materia.nombre }}"
+                    data-docente="{{ materia.docente.username }}"
+                    data-evaluacion="{{ nota.tipo_evaluacion }}"
+                    data-nota="{{ nota.nota }}"
+                    data-fecha="{{ nota.fecha.strftime('%d/%m/%Y') }}"
+                    data-observaciones="{{ nota.observaciones or '' }}">
+                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                    <td>{{ alumno.dni }}</td>
+                    <td>
+                        <span class="badge badge-success" style="font-size: 14px; padding: 8px 12px;">
+                            {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
+                        </span>
+                    </td>
+                    <td>{{ materia.nombre }}</td>
+                    <td>{{ materia.docente.username }}</td>
+                    <td>{{ nota.tipo_evaluacion }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                            {{ nota.nota }}
+                        </span>
+                    </td>
+                    <td>{{ nota.fecha.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ nota.observaciones or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjetas para móvil -->
+    <div class="mobile-cards">
+        {% for nota, alumno, materia in notas %}
+        <div class="nota-card nota-row" 
+             data-alumno="{{ alumno.nombre }} {{ alumno.apellido }}"
+             data-dni="{{ alumno.dni }}"
+             data-ciclo="{{ alumno.ciclo }}"
+             data-materia="{{ materia.nombre }}"
+             data-docente="{{ materia.docente.username }}"
+             data-evaluacion="{{ nota.tipo_evaluacion }}"
+             data-nota="{{ nota.nota }}"
+             data-fecha="{{ nota.fecha.strftime('%d/%m/%Y') }}"
+             data-observaciones="{{ nota.observaciones or '' }}">
+            <div class="nota-card-header">
+                <div class="nota-card-title">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+                <div class="nota-card-badges">
+                    <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                        {{ nota.nota }}
+                    </span>
+                    <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                        {% if nota.nota >= 13 %}
+                            Aprobado
+                        {% elif nota.nota >= 10 %}
+                            Recuperación
+                        {% else %}
+                            Desaprobado
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="nota-card-body">
+                <div class="nota-card-field">
+                    <div class="nota-card-label">DNI</div>
+                    <div class="nota-card-value">{{ alumno.dni }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Ciclo</div>
+                    <div class="nota-card-value">
+                        <span class="badge badge-success" style="font-size: 12px; padding: 4px 8px;">
+                            {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Materia</div>
+                    <div class="nota-card-value">{{ materia.nombre }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Docente</div>
+                    <div class="nota-card-value">{{ materia.docente.username }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Evaluación</div>
+                    <div class="nota-card-value">{{ nota.tipo_evaluacion }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Fecha</div>
+                    <div class="nota-card-value">{{ nota.fecha.strftime('%d/%m/%Y') }}</div>
+                </div>
+                {% if nota.observaciones %}
+                <div class="nota-card-observations">
+                    <div class="nota-card-label">Observaciones</div>
+                    <div class="nota-card-value">{{ nota.observaciones }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="stats-summary">
+        <div class="grid grid-4">
+            <div class="stats-card">
+                <h3>{{ notas|length }}</h3>
+                <p><i class="fas fa-chart-line"></i> Total de Notas</p>
+            </div>
+            <div class="stats-card">
+                <h3>{{ notas|selectattr('0.nota', 'ge', 13)|list|length }}</h3>
+                <p><i class="fas fa-check-circle"></i> Notas Aprobadas (≥13)</p>
+            </div>
+            <div class="stats-card">
+                <h3>{{ notas|selectattr('0.nota', 'ge', 10)|selectattr('0.nota', 'lt', 13)|list|length }}</h3>
+                <p><i class="fas fa-exclamation-triangle"></i> Recuperación (10-12)</p>
+            </div>
+            <div class="stats-card">
+                <h3>{{ notas|selectattr('0.nota', 'ge', 5)|selectattr('0.nota', 'lt', 10)|list|length }}</h3>
+                <p><i class="fas fa-times-circle"></i> Desaprobadas (5-9)</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No hay notas registradas en el sistema.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Funciones para el menú hamburguesa
+function toggleMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+function closeMenu() {
+    const nav = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const overlay = document.querySelector('.nav-overlay');
+    
+    nav.classList.remove('active');
+    hamburger.classList.remove('active');
+    overlay.classList.remove('active');
+}
+
+// Cerrar menú con tecla Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeMenu();
+    }
+});
+
+// Funcionalidad del buscador de notas
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchNota');
+    const notaRows = document.querySelectorAll('.nota-row');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                // Mostrar todas las filas si no hay término de búsqueda
+                notaRows.forEach(row => {
+                    row.style.display = '';
+                });
+                mostrarMensajeSinResultados(false);
+            } else {
+                // Filtrar filas basado en el término de búsqueda
+                let visibleCount = 0;
+                
+                notaRows.forEach(row => {
+                    const alumno = row.dataset.alumno.toLowerCase();
+                    const dni = row.dataset.dni.toLowerCase();
+                    const ciclo = row.dataset.ciclo.toLowerCase();
+                    const materia = row.dataset.materia.toLowerCase();
+                    const docente = row.dataset.docente.toLowerCase();
+                    const evaluacion = row.dataset.evaluacion.toLowerCase();
+                    const nota = row.dataset.nota.toLowerCase();
+                    const fecha = row.dataset.fecha.toLowerCase();
+                    const observaciones = row.dataset.observaciones.toLowerCase();
+                    
+                    const matches = alumno.includes(searchTerm) ||
+                                  dni.includes(searchTerm) ||
+                                  ciclo.includes(searchTerm) ||
+                                  materia.includes(searchTerm) ||
+                                  docente.includes(searchTerm) ||
+                                  evaluacion.includes(searchTerm) ||
+                                  nota.includes(searchTerm) ||
+                                  fecha.includes(searchTerm) ||
+                                  observaciones.includes(searchTerm);
+                    
+                    if (matches) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                // Mostrar mensaje si no hay resultados
+                mostrarMensajeSinResultados(visibleCount === 0);
+            }
+        });
+    }
+});
+
+function mostrarMensajeSinResultados(mostrar) {
+    let mensajeElement = document.getElementById('mensajeSinResultados');
+    
+    if (mostrar) {
+        if (!mensajeElement) {
+            mensajeElement = document.createElement('div');
+            mensajeElement.id = 'mensajeSinResultados';
+            mensajeElement.className = 'alert alert-warning';
+            mensajeElement.innerHTML = '<i class="fas fa-search"></i> No se encontraron notas que coincidan con tu búsqueda.';
+            
+            // Insertar después del buscador
+            const searchContainer = document.querySelector('.search-container');
+            if (searchContainer) {
+                searchContainer.parentNode.insertBefore(mensajeElement, searchContainer.nextSibling);
+            }
+        }
+        mensajeElement.style.display = 'block';
+    } else {
+        if (mensajeElement) {
+            mensajeElement.style.display = 'none';
+        }
+    }
+}
+</script>
+{% endblock %}

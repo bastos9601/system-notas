@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1><i class="fas fa-graduation-cap"></i> Sistema de Notas</h1>
+    <p>Consulta tus calificaciones de manera rápida y segura</p>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-search"></i> Consultar Notas</h2>
+    <p>Ingresa tu número de DNI para ver tus calificaciones</p>
+        <form action="{{ url_for('index') }}" method="POST" style="margin: 0;">
+        <div class="form-group">
+            <label for="dni">Número de DNI:</label>
+            <input type="text" id="dni" name="dni" class="form-control" placeholder="Ej: 12345678" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i class="fas fa-search"></i> Consultar Notas
+        </button>
+    </form>
+</div>
+
+{% if alumno %}
+<div class="card">
+    <h2><i class="fas fa-user"></i> Información del Alumno</h2>
+    <div class="grid grid-2">
+        <div>
+            <p><strong>Nombre:</strong> {{ alumno.nombre }} {{ alumno.apellido }}</p>
+            <p><strong>DNI:</strong> {{ alumno.dni }}</p>
+            <p><strong>Ciclo:</strong> 
+                <span class="badge badge-info" style="background-color: #17a2b8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                    {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
+                </span>
+            </p>
+        </div>
+        <div>
+            {% if alumno.email %}
+            <p><strong>Email:</strong> {{ alumno.email }}</p>
+            {% endif %}
+            {% if alumno.telefono %}
+            <p><strong>Teléfono:</strong> {{ alumno.telefono }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if notas %}
+<div class="card">
+    <h2><i class="fas fa-chart-line"></i> Calificaciones</h2>
+    <!-- Tabla para desktop -->
+    <div class="table-responsive">
+        <table class="table">
+                <thead>
+                    <tr>
+                        <th>Materia</th>
+                        <th>Docente</th>
+                        <th>Evaluación</th>
+                        <th>Nota</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+            <tbody>
+                {% for nota in notas %}
+                <tr>
+                    <td>{{ nota.materia_nombre }}</td>
+                    <td>{{ nota.docente_username }}</td>
+                    <td>{{ nota.tipo_evaluacion }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                            {{ nota.nota }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                            {% if nota.nota >= 13 %}
+                                Aprobado
+                            {% elif nota.nota >= 10 %}
+                                Recuperación
+                            {% else %}
+                                Desaprobado
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>{{ nota.fecha }}</td>
+                    <td>{{ nota.observaciones or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjetas para móvil -->
+    <div class="mobile-cards">
+        {% for nota in notas %}
+        <div class="nota-card">
+            <div class="nota-card-header">
+                <div class="nota-card-title">{{ nota.materia_nombre }}</div>
+                <div class="nota-card-badges">
+                    <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                        {{ nota.nota }}
+                    </span>
+                    <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}">
+                        {% if nota.nota >= 13 %}
+                            Aprobado
+                        {% elif nota.nota >= 10 %}
+                            Recuperación
+                        {% else %}
+                            Desaprobado
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="nota-card-body">
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Docente</div>
+                    <div class="nota-card-value">{{ nota.docente_username }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Evaluación</div>
+                    <div class="nota-card-value">{{ nota.tipo_evaluacion }}</div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Fecha</div>
+                    <div class="nota-card-value">{{ nota.fecha }}</div>
+                </div>
+                {% if nota.observaciones %}
+                <div class="nota-card-observations">
+                    <div class="nota-card-label">Observaciones</div>
+                    <div class="nota-card-value">{{ nota.observaciones }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No se encontraron calificaciones registradas para este alumno.
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Sección de Acceso Docentes oculta -->
+<!-- <div class="card">
+    <h2><i class="fas fa-users"></i> Acceso Docentes</h2>
+    <p>Panel de administración para docentes y administradores</p>
+    <div class="d-flex gap-10">
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">
+            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+        </a>
+    </div>
+</div> -->
+
+<!-- <div class="card">
+    <h2><i class="fas fa-info-circle"></i> Información del Sistema</h2>
+    <div class="grid grid-3">
+        <div class="stats-card">
+            <h3><i class="fas fa-shield-alt"></i></h3>
+            <p>Acceso Seguro</p>
+        </div>
+        <div class="stats-card">
+            <h3><i class="fas fa-mobile-alt"></i></h3>
+            <p>Multiplataforma</p>
+        </div>
+        <div class="stats-card">
+            <h3><i class="fas fa-clock"></i></h3>
+            <p>Disponible 24/7</p>
+        </div>
+    </div>
+</div> -->
+{% endblock %}
