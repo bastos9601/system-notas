@@ -34,34 +34,36 @@ El proyecto ya está configurado para desplegarse en Koyeb. Los archivos necesar
 3. Conecta tu cuenta de GitHub
 4. Selecciona el repositorio de tu proyecto
 
-### 4. Configurar variables de entorno
+### 4. Configurar base de datos PostgreSQL
+
+**IMPORTANTE**: Tu proyecto ya está configurado para usar PostgreSQL en producción.
+
+1. En Koyeb, ve a "Databases"
+2. Crea una nueva base de datos PostgreSQL
+3. Copia la URL de conexión (formato: `postgres://usuario:password@host:puerto/database`)
+4. **NO** cambies el formato de la URL, el código la convierte automáticamente
+
+### 5. Configurar variables de entorno
 
 En la sección "Environment Variables" de Koyeb, agrega:
 
 ```
 SECRET_KEY=tu_clave_secreta_muy_segura_aqui
+DATABASE_URL=postgres://usuario:password@host:puerto/database
 FLASK_ENV=production
 ```
 
-**⚠️ IMPORTANTE**: Cambia `SECRET_KEY` por una clave segura y única.
-
-### 5. Configurar base de datos
-
-Para producción, Koyeb recomienda usar PostgreSQL:
-
-1. En Koyeb, ve a "Databases"
-2. Crea una nueva base de datos PostgreSQL
-3. Copia la URL de conexión
-4. Agrega esta variable de entorno:
-   ```
-   DATABASE_URL=postgresql://usuario:password@host:puerto/database
-   ```
+**⚠️ IMPORTANTE**: 
+- Cambia `SECRET_KEY` por una clave segura y única
+- Usa la URL exacta que te da Koyeb para PostgreSQL
+- El código convierte automáticamente `postgres://` a `postgresql://`
 
 ### 6. Desplegar
 
-1. Haz clic en "Deploy"
+1. Haz clic en "Guardar e implementar" → "Con construcción"
 2. Koyeb construirá y desplegará tu aplicación automáticamente
 3. Una vez completado, tendrás una URL pública
+4. **La base de datos se creará automáticamente** con las tablas necesarias
 
 ## Uso local
 
