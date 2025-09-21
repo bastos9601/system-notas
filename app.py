@@ -533,7 +533,9 @@ def crear_materia():
     
     return render_template('docente/crear_materia.html')
 
-if __name__ == '__main__':
+# Inicializar base de datos y usuario admin
+def init_db():
+    """Inicializar base de datos y crear usuario admin si no existe"""
     with app.app_context():
         db.create_all()
         
@@ -549,8 +551,12 @@ if __name__ == '__main__':
             db.session.add(admin)
             db.session.commit()
             print("Usuario administrador creado: admin / admin123")
-    
-    # Configuración para producción
+
+# Inicializar la base de datos al importar el módulo
+init_db()
+
+if __name__ == '__main__':
+    # Configuración para desarrollo local
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_ENV') == 'development'
     
