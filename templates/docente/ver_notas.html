@@ -13,34 +13,6 @@
     </div>
 </div>
 
-<!-- Botón hamburguesa -->
-<button class="hamburger" onclick="toggleMenu()">
-    <span></span>
-    <span></span>
-    <span></span>
-</button>
-
-<!-- Overlay para cerrar menú -->
-<div class="nav-overlay" onclick="closeMenu()"></div>
-
-<!-- Menú de navegación -->
-<div class="nav" id="navMenu">
-    <a href="{{ url_for('docente_dashboard') }}" onclick="closeMenu()">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
-    </a>
-    <a href="{{ url_for('agregar_nota') }}" onclick="closeMenu()">
-        <i class="fas fa-plus"></i> Agregar Nota
-    </a>
-    <a href="{{ url_for('crear_materia') }}" onclick="closeMenu()">
-        <i class="fas fa-book"></i> Crear Materia
-    </a>
-    <a href="{{ url_for('docente_ver_notas') }}" onclick="closeMenu()">
-        <i class="fas fa-chart-line"></i> Ver Notas
-    </a>
-    <a href="{{ url_for('logout') }}" onclick="closeMenu()" class="nav-logout">
-        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-    </a>
-</div>
 
 <div class="card">
     <h2><i class="fas fa-chart-line"></i> Calificaciones de Mis Materias</h2>

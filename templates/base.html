@@ -9,10 +9,54 @@
 </head>
 <body>
     <div class="container">
-        {% if not request.endpoint == 'index' %}
+        {% if not request.endpoint == 'index' and not request.endpoint == 'login' %}
         <div class="header">
             <h1><i class="fas fa-graduation-cap"></i> Sistema de Notas</h1>
             <p>Gestión académica integral</p>
+        </div>
+        
+        <!-- Botón hamburguesa -->
+        <button class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Overlay para cerrar menú -->
+        <div class="nav-overlay" onclick="closeMenu()"></div>
+
+        <!-- Menú de navegación -->
+        <div class="nav" id="navMenu">
+            {% if session.tipo == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}" onclick="closeMenu()">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="{{ url_for('crear_usuario') }}" onclick="closeMenu()">
+                    <i class="fas fa-user-plus"></i> Crear Usuario
+                </a>
+                <a href="{{ url_for('registrar_alumno') }}" onclick="closeMenu()">
+                    <i class="fas fa-user-graduate"></i> Registrar Alumno
+                </a>
+                <a href="{{ url_for('admin_ver_notas') }}" onclick="closeMenu()">
+                    <i class="fas fa-chart-line"></i> Ver Notas
+                </a>
+            {% elif session.tipo == 'docente' %}
+                <a href="{{ url_for('docente_dashboard') }}" onclick="closeMenu()">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="{{ url_for('agregar_nota') }}" onclick="closeMenu()">
+                    <i class="fas fa-plus"></i> Agregar Nota
+                </a>
+                <a href="{{ url_for('crear_materia') }}" onclick="closeMenu()">
+                    <i class="fas fa-book"></i> Crear Materia
+                </a>
+                <a href="{{ url_for('docente_ver_notas') }}" onclick="closeMenu()">
+                    <i class="fas fa-chart-line"></i> Ver Notas
+                </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" onclick="closeMenu()" class="nav-logout">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
         </div>
         {% endif %}
 
@@ -67,6 +111,48 @@
                     }, 300);
                 }, 5000);
             });
+        });
+
+        // Funciones para el menú hamburguesa
+        function toggleMenu() {
+            const nav = document.getElementById('navMenu');
+            const hamburger = document.querySelector('.hamburger');
+            const overlay = document.querySelector('.nav-overlay');
+            
+            if (nav && hamburger && overlay) {
+                nav.classList.toggle('active');
+                hamburger.classList.toggle('active');
+                overlay.classList.toggle('active');
+            }
+        }
+
+        function closeMenu() {
+            const nav = document.getElementById('navMenu');
+            const hamburger = document.querySelector('.hamburger');
+            const overlay = document.querySelector('.nav-overlay');
+            
+            if (nav && hamburger && overlay) {
+                nav.classList.remove('active');
+                hamburger.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Cerrar menú con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeMenu();
+            }
+        });
+
+        // Cerrar menú al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const nav = document.getElementById('navMenu');
+            const hamburger = document.querySelector('.hamburger');
+            
+            if (nav && hamburger && !nav.contains(event.target) && !hamburger.contains(event.target)) {
+                closeMenu();
+            }
         });
     </script>
 </body>

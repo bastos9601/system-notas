@@ -155,7 +155,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 @app.route('/admin/dashboard')
 def admin_dashboard():
@@ -534,15 +534,15 @@ def crear_materia():
         
         try:
             # Crear la nueva materia
-            materia = Materia(
+                materia = Materia(
                 nombre=nombre.strip(),
                 codigo=codigo.strip(),
-                docente_id=docente_id
-            )
-            db.session.add(materia)
-            db.session.commit()
-            flash('Materia creada exitosamente', 'success')
-            return redirect(url_for('docente_dashboard'))
+                    docente_id=docente_id
+                )
+                db.session.add(materia)
+                db.session.commit()
+                flash('Materia creada exitosamente', 'success')
+                return redirect(url_for('docente_dashboard'))
             
         except Exception as e:
             db.session.rollback()
@@ -636,7 +636,7 @@ def init_db():
             db.session.add(admin)
             db.session.commit()
             print("Usuario administrador creado: admin / admin123")
-
+    
 # Inicializar la base de datos al importar el módulo
 init_db()
 
