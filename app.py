@@ -671,6 +671,124 @@ def eliminar_nota(nota_id):
     
     return redirect(url_for('docente_ver_notas'))
 
+@app.route('/docente/ver_alumnos')
+def docente_ver_alumnos():
+    if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    # Obtener todos los alumnos ordenados por fecha de registro
+    alumnos = Alumno.query.order_by(Alumno.fecha_registro.desc()).all()
+    
+    return render_template('docente/ver_alumnos.html', alumnos=alumnos)
+
+@app.route('/docente/ver_materias')
+def docente_ver_materias():
+    if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    docente_id = session['user_id']
+    # Obtener todas las materias del docente
+    materias = Materia.query.filter_by(docente_id=docente_id).order_by(Materia.id.desc()).all()
+    
+    # Agregar contador de notas a cada materia
+    materias_con_notas = []
+    for materia in materias:
+        notas_count = Nota.query.filter_by(materia_id=materia.id).count()
+        materias_con_notas.append((materia, notas_count))
+    
+    return render_template('docente/ver_materias.html', materias=materias_con_notas)
+
+@app.route('/docente/ver_notas_materia/<int:materia_id>')
+def docente_ver_notas_materia(materia_id):
+    if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    docente_id = session['user_id']
+    
+    # Verificar que la materia pertenece al docente
+    materia = Materia.query.filter_by(id=materia_id, docente_id=docente_id).first()
+    if not materia:
+        flash('Materia no encontrada o no tienes permisos para verla', 'error')
+        return redirect(url_for('docente_ver_materias'))
+    
+    # Obtener las notas de la materia específica con información del alumno
+    notas = db.session.query(Nota, Alumno).join(Alumno).filter(Nota.materia_id == materia_id).order_by(Nota.fecha.desc()).all()
+    
+    # Actualizar notas que no tengan tipo_evaluacion
+    for nota, alumno in notas:
+        if not nota.tipo_evaluacion or nota.tipo_evaluacion.strip() == '':
+            nota.tipo_evaluacion = 'Parcial'  # Valor por defecto
+            db.session.commit()
+    
+    return render_template('docente/ver_notas_materia.html', materia=materia, notas=notas)
+
+@app.route('/admin/actualizar_tipos_evaluacion')
+def actualizar_tipos_evaluacion():
+    """Ruta para actualizar todas las notas que no tengan tipo de evaluación"""
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        # Buscar todas las notas que no tengan tipo_evaluacion o esté vacío
+        notas_sin_tipo = Nota.query.filter(
+            (Nota.tipo_evaluacion == None) | 
+            (Nota.tipo_evaluacion == '') | 
+            (Nota.tipo_evaluacion == 'None')
+        ).all()
+        
+        contador = 0
+        for nota in notas_sin_tipo:
+            nota.tipo_evaluacion = 'Parcial'  # Valor por defecto
+            contador += 1
+        
+        db.session.commit()
+        
+        if contador > 0:
+            flash(f'Se actualizaron {contador} notas con tipo de evaluación por defecto', 'success')
+        else:
+            flash('Todas las notas ya tienen tipo de evaluación asignado', 'info')
+            
+    except Exception as e:
+        db.session.rollback()
+        flash('Error al actualizar los tipos de evaluación', 'error')
+        print(f"Error al actualizar tipos de evaluación: {e}")
+    
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/ver_notas_alumno/<int:alumno_id>')
+def admin_ver_notas_alumno(alumno_id):
+    """Ver todas las notas de un alumno específico"""
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        # Obtener el alumno
+        alumno = Alumno.query.get_or_404(alumno_id)
+        
+        # Obtener todas las notas del alumno
+        notas_query = Nota.query.filter_by(alumno_id=alumno_id).order_by(Nota.fecha.desc()).all()
+        
+        # Crear una lista con información adicional
+        notas = []
+        for nota in notas_query:
+            # Asegurar que tipo_evaluacion no sea None
+            if not nota.tipo_evaluacion or nota.tipo_evaluacion.strip() == '':
+                nota.tipo_evaluacion = 'Parcial'
+                db.session.commit()
+            
+            materia = Materia.query.get(nota.materia_id)
+            docente = Usuario.query.get(materia.docente_id) if materia else None
+            notas.append((nota, materia, docente))
+        
+        return render_template('admin/ver_notas_alumno.html', alumno=alumno, notas=notas)
+        
+    except Exception as e:
+        print(f"Error en admin_ver_notas_alumno: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Error al cargar las notas del alumno', 'error')
+        return redirect(url_for('admin_ver_alumnos'))
+
 
 # Inicializar base de datos y usuario admin
 def init_db():

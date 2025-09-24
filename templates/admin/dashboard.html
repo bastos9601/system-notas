@@ -5,6 +5,13 @@
 {% block content %}
 <div class="dashboard-header">
     <h1 class="dashboard-title"><i class="fas fa-cogs"></i> Panel de Administración</h1>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="{{ url_for('actualizar_tipos_evaluacion') }}" class="btn btn-warning btn-sm" 
+           onclick="return confirm('¿Estás seguro de que quieres actualizar los tipos de evaluación de todas las notas? Esto asignará \'Parcial\' como tipo por defecto a las notas que no tengan tipo asignado.')"
+           style="font-size: 12px; padding: 6px 12px;">
+            <i class="fas fa-tools"></i> Actualizar Tipos de Evaluación
+        </a>
+    </div>
 </div>
 
 

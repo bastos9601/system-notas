@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Lista de Alumnos{% endblock %}
+{% block title %}Alumnos Disponibles{% endblock %}
 
 {% block content %}
 <div class="dashboard-header">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 class="dashboard-title"><i class="fas fa-user-graduate"></i> Lista de Alumnos Registrados</h1>
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <h1 class="dashboard-title"><i class="fas fa-user-graduate"></i> Alumnos Disponibles</h1>
+        <a href="{{ url_for('docente_dashboard') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver al Dashboard
         </a>
     </div>
@@ -14,10 +14,7 @@
 
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2><i class="fas fa-list"></i> Todos los Alumnos ({{ alumnos|length }} registrados)</h2>
-        <a href="{{ url_for('registrar_alumno') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Registrar Nuevo Alumno
-        </a>
+        <h2><i class="fas fa-list"></i> Todos los Alumnos ({{ alumnos|length }} disponibles)</h2>
     </div>
     
     <!-- Buscador de alumnos -->
@@ -44,7 +41,6 @@
                     <th>Teléfono</th>
                     <th>Fecha de Nacimiento</th>
                     <th>Fecha de Registro</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,19 +80,6 @@
                         {% endif %}
                     </td>
                     <td>{{ alumno.fecha_registro.strftime('%d/%m/%Y') }}</td>
-                    <td>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <a href="{{ url_for('admin_ver_notas_alumno', alumno_id=alumno.id) }}" class="btn btn-info btn-sm">
-                                <i class="fas fa-chart-line"></i> Ver Notas
-                            </a>
-                            <a href="{{ url_for('editar_alumno', alumno_id=alumno.id) }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-edit"></i> Editar
-                            </a>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarAlumno('{{ alumno.id }}', '{{ alumno.nombre }} {{ alumno.apellido }}')">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -151,24 +134,13 @@
                     <div class="alumno-card-value">{{ alumno.fecha_registro.strftime('%d/%m/%Y') }}</div>
                 </div>
             </div>
-            <div class="alumno-card-actions">
-                <a href="{{ url_for('admin_ver_notas_alumno', alumno_id=alumno.id) }}" class="btn btn-info btn-sm">
-                    <i class="fas fa-chart-line"></i> Ver Notas
-                </a>
-                <a href="{{ url_for('editar_alumno', alumno_id=alumno.id) }}" class="btn btn-warning btn-sm">
-                    <i class="fas fa-edit"></i> Editar
-                </a>
-                <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarAlumno('{{ alumno.id }}', '{{ alumno.nombre }} {{ alumno.apellido }}')">
-                    <i class="fas fa-trash"></i> Eliminar
-                </button>
-            </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        No hay alumnos registrados. <a href="{{ url_for('registrar_alumno') }}">Registrar el primer alumno</a>
+        No hay alumnos registrados en el sistema.
     </div>
     {% endif %}
 </div>
@@ -224,17 +196,6 @@ function mostrarMensajeSinResultados(mostrar) {
         mensajeElement.style.display = 'block';
     } else if (mensajeElement) {
         mensajeElement.style.display = 'none';
-    }
-}
-
-// Función para eliminar alumno
-function confirmarEliminarAlumno(alumnoId, nombreAlumno) {
-    if (confirm(`¿Estás seguro de que quieres eliminar al alumno "${nombreAlumno}"?\n\nEsta acción eliminará:\n- El alumno\n- Todas sus notas\n\nEsta acción no se puede deshacer.`)) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/admin/eliminar_alumno/' + alumnoId;
-        document.body.appendChild(form);
-        form.submit();
     }
 }
 

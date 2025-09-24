@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Materias{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="dashboard-title"><i class="fas fa-book"></i> Mis Materias</h1>
+        <a href="{{ url_for('docente_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2><i class="fas fa-list"></i> Todas mis Materias ({{ materias|length }} asignadas)</h2>
+    </div>
+    
+    <!-- Buscador de materias -->
+    <div class="search-container" style="margin-bottom: 20px;">
+        <div class="form-group">
+            <label for="searchMateria" style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">
+                <i class="fas fa-search"></i> Buscar materia:
+            </label>
+            <input type="text" id="searchMateria" class="form-control" placeholder="Buscar por nombre de materia o código..." 
+                   style="width: 100%; max-width: 500px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+        </div>
+    </div>
+    
+    {% if materias %}
+    <!-- Tabla para desktop -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Código</th>
+                    <th>Notas Registradas</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for materia, notas_count in materias %}
+                <tr class="materia-row" 
+                    data-nombre="{{ materia.nombre }}" 
+                    data-codigo="{{ materia.codigo }}">
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; font-weight: bold; font-size: 16px;">
+                                {{ materia.nombre[0].upper() }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #2d3748;">{{ materia.nombre }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-primary" style="font-size: 14px; padding: 8px 12px; font-family: monospace;">
+                            {{ materia.codigo }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success" style="font-size: 12px; padding: 4px 8px;">
+                            {{ notas_count }} nota{{ 's' if notas_count != 1 else '' }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success" style="font-size: 12px; padding: 4px 8px;">
+                            <i class="fas fa-check"></i> Activa
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{{ url_for('agregar_nota') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Agregar Nota
+                            </a>
+                            <a href="{{ url_for('docente_ver_notas_materia', materia_id=materia.id) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Ver Notas
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjetas para móvil -->
+    <div class="mobile-cards">
+        {% for materia, notas_count in materias %}
+        <div class="materia-card materia-row" 
+             data-nombre="{{ materia.nombre }}" 
+             data-codigo="{{ materia.codigo }}">
+            <div class="materia-card-header">
+                <div style="display: flex; align-items: center;">
+                    <div class="avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; font-weight: bold; font-size: 20px;">
+                        {{ materia.nombre[0].upper() }}
+                    </div>
+                    <div>
+                        <div class="materia-card-title">{{ materia.nombre }}</div>
+                        <div style="font-size: 14px; color: #718096; margin-top: 2px;">Código: {{ materia.codigo }}</div>
+                    </div>
+                </div>
+                <div class="materia-card-badges">
+                    <span class="badge badge-primary" style="font-size: 12px; padding: 4px 8px;">
+                        {{ materia.codigo }}
+                    </span>
+                </div>
+            </div>
+            <div class="materia-card-body">
+                <div class="materia-card-field">
+                    <div class="materia-card-label">Código</div>
+                    <div class="materia-card-value">{{ materia.codigo }}</div>
+                </div>
+                <div class="materia-card-field">
+                    <div class="materia-card-label">Notas Registradas</div>
+                    <div class="materia-card-value">
+                        <span class="badge badge-success" style="font-size: 12px; padding: 4px 8px;">
+                            {{ notas_count }} nota{{ 's' if notas_count != 1 else '' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="materia-card-field">
+                    <div class="materia-card-label">Estado</div>
+                    <div class="materia-card-value">
+                        <span class="badge badge-success" style="font-size: 12px; padding: 4px 8px;">
+                            <i class="fas fa-check"></i> Activa
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="materia-card-actions">
+                <a href="{{ url_for('agregar_nota') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Agregar Nota
+                </a>
+                <a href="{{ url_for('docente_ver_notas_materia', materia_id=materia.id) }}" class="btn btn-info btn-sm">
+                    <i class="fas fa-eye"></i> Ver Notas
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        No tienes materias asignadas. Contacta al administrador para que te asigne materias.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Función para buscar materias
+function buscarMaterias() {
+    const searchInput = document.getElementById('searchMateria');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const materiaRows = document.querySelectorAll('.materia-row');
+    
+    let visibleCount = 0;
+    
+    materiaRows.forEach(row => {
+        const nombre = row.getAttribute('data-nombre').toLowerCase();
+        const codigo = row.getAttribute('data-codigo').toLowerCase();
+        
+        // Buscar por nombre o código
+        if (searchTerm === '' || 
+            nombre.includes(searchTerm) || 
+            codigo.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    mostrarMensajeSinResultados(visibleCount === 0 && searchTerm !== '');
+}
+
+// Función para mostrar mensaje cuando no hay resultados
+function mostrarMensajeSinResultados(mostrar) {
+    let mensajeElement = document.getElementById('sin-resultados');
+    
+    if (mostrar) {
+        if (!mensajeElement) {
+            mensajeElement = document.createElement('div');
+            mensajeElement.id = 'sin-resultados';
+            mensajeElement.className = 'alert alert-warning';
+            mensajeElement.style.marginTop = '20px';
+            mensajeElement.innerHTML = '<i class="fas fa-search"></i> No se encontraron materias con ese criterio de búsqueda.';
+            
+            // Insertar después del buscador
+            const searchContainer = document.querySelector('.search-container');
+            searchContainer.parentNode.insertBefore(mensajeElement, searchContainer.nextSibling);
+        }
+        mensajeElement.style.display = 'block';
+    } else if (mensajeElement) {
+        mensajeElement.style.display = 'none';
+    }
+}
+
+// Event listener para el campo de búsqueda
+document.addEventListener('DOMContentLoaded', function() {
+    const searchMateriaInput = document.getElementById('searchMateria');
+    if (searchMateriaInput) {
+        searchMateriaInput.addEventListener('input', buscarMaterias);
+        searchMateriaInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                searchMateriaInput.value = '';
+                buscarMaterias();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

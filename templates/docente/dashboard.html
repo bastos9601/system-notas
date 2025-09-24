@@ -15,13 +15,19 @@
 
 
 <div class="grid grid-2">
-    <div class="stats-card">
+    <div class="stats-card clickable-card" onclick="verTodasLasMaterias()" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'">
         <h3>{{ materias|length }}</h3>
         <p><i class="fas fa-book"></i> Mis Materias</p>
+        <small style="color: #718096; font-size: 12px; margin-top: 8px; display: block;">
+            <i class="fas fa-mouse-pointer"></i> Haz clic para ver todas
+        </small>
     </div>
-    <div class="stats-card">
+    <div class="stats-card clickable-card" onclick="verTodosLosAlumnos()" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'">
         <h3>{{ alumnos|length }}</h3>
         <p><i class="fas fa-user-graduate"></i> Alumnos</p>
+        <small style="color: #718096; font-size: 12px; margin-top: 8px; display: block;">
+            <i class="fas fa-mouse-pointer"></i> Haz clic para ver todos
+        </small>
     </div>
 </div>
 
@@ -40,7 +46,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for materia in materias %}
+                    {% for materia in materias[:2] %}
                     <tr>
                         <td>{{ materia.nombre }}</td>
                         <td>{{ materia.codigo }}</td>
@@ -53,11 +59,22 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% if materias|length > 2 %}
+            <div style="text-align: center; margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <small style="color: #6c757d;">
+                    <i class="fas fa-info-circle"></i> 
+                    Mostrando 2 de {{ materias|length }} materias. 
+                    <a href="{{ url_for('docente_ver_materias') }}" style="color: #007bff; text-decoration: none;">
+                        <strong>Ver todas las materias</strong>
+                    </a>
+                </small>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Tarjetas para móvil -->
         <div class="mobile-cards">
-            {% for materia in materias %}
+            {% for materia in materias[:2] %}
             <div class="materia-card">
                 <div class="materia-card-header">
                     <div class="materia-card-title">{{ materia.nombre }}</div>
@@ -111,7 +128,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for alumno in alumnos[:10] %}
+                    {% for alumno in alumnos[:2] %}
                     <tr>
                         <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                         <td>{{ alumno.dni }}</td>
@@ -126,16 +143,22 @@
                     {% endfor %}
                 </tbody>
             </table>
-            {% if alumnos|length > 10 %}
-            <p class="text-center">
-                <small>Mostrando 10 de {{ alumnos|length }} alumnos</small>
-            </p>
+            {% if alumnos|length > 2 %}
+            <div style="text-align: center; margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <small style="color: #6c757d;">
+                    <i class="fas fa-info-circle"></i> 
+                    Mostrando 2 de {{ alumnos|length }} alumnos. 
+                    <a href="{{ url_for('docente_ver_alumnos') }}" style="color: #007bff; text-decoration: none;">
+                        <strong>Ver todos los alumnos</strong>
+                    </a>
+                </small>
+            </div>
             {% endif %}
         </div>
 
         <!-- Tarjetas para móvil -->
         <div class="mobile-cards">
-            {% for alumno in alumnos[:10] %}
+            {% for alumno in alumnos[:2] %}
             <div class="docente-alumno-card">
                 <div class="docente-alumno-card-header">
                     <div class="docente-alumno-card-title">{{ alumno.nombre }} {{ alumno.apellido }}</div>
@@ -201,6 +224,16 @@
 </div>
 
 <script>
+// Función para ver todos los alumnos
+function verTodosLosAlumnos() {
+    window.location.href = "{{ url_for('docente_ver_alumnos') }}";
+}
+
+// Función para ver todas las materias
+function verTodasLasMaterias() {
+    window.location.href = "{{ url_for('docente_ver_materias') }}";
+}
+
 // Script para funcionalidades del dashboard del docente
 </script>
 {% endblock %}

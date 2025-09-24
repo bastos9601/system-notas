@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Notas de {{ alumno.nombre }} {{ alumno.apellido }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="dashboard-title"><i class="fas fa-chart-line"></i> Notas de {{ alumno.nombre }} {{ alumno.apellido }}</h1>
+        <a href="{{ url_for('admin_ver_alumnos') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Lista de Alumnos
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h2><i class="fas fa-user-graduate"></i> {{ alumno.nombre }} {{ alumno.apellido }}</h2>
+            <p style="color: #6c757d; margin: 0;">
+                <strong>DNI:</strong> {{ alumno.dni }} | 
+                <strong>Ciclo:</strong> {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }} | 
+                <strong>Total de notas:</strong> {{ notas|length }}
+            </p>
+        </div>
+    </div>
+    
+    <!-- Buscador de notas -->
+    <div class="search-container" style="margin-bottom: 20px;">
+        <div class="form-group">
+            <label for="searchNota" style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">
+                <i class="fas fa-search"></i> Buscar nota:
+            </label>
+            <input type="text" id="searchNota" class="form-control" placeholder="Buscar por materia, tipo de evaluación, docente o nota..." 
+                   style="width: 100%; max-width: 500px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+        </div>
+    </div>
+    
+    {% if notas %}
+    <!-- Tabla para desktop -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Docente</th>
+                    <th>Tipo de Evaluación</th>
+                    <th>Nota</th>
+                    <th>Fecha</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota, materia, docente in notas %}
+                <tr class="nota-row" 
+                    data-materia="{{ materia.nombre if materia else 'Sin materia' }}"
+                    data-docente="{{ docente.username }}" if docente else "Sin docente"
+                    data-tipo="{{ nota.tipo_evaluacion }}"
+                    data-nota="{{ nota.nota }}">
+                    <td>
+                        {% if materia %}
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; font-weight: bold; font-size: 16px;">
+                                {{ materia.nombre[0] }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #2d3748;">{{ materia.nombre }}</div>
+                                <small style="color: #6c757d;">Código: {{ materia.codigo }}</small>
+                            </div>
+                        </div>
+                        {% else %}
+                        <span style="color: #a0aec0;">Materia no encontrada</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if docente %}
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar" style="width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; margin-right: 10px; color: white; font-weight: bold; font-size: 14px;">
+                                {{ docente.username[0].upper() }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #2d3748; font-size: 14px;">{{ docente.username }}</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <span style="color: #a0aec0;">Docente no encontrado</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-warning" style="font-size: 12px; padding: 4px 8px; background-color: #ffc107; color: #212529;">
+                            {{ nota.tipo_evaluacion.title() }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}" style="font-size: 14px; padding: 6px 10px; font-weight: bold;">
+                            {{ nota.nota }}
+                        </span>
+                    </td>
+                    <td>{{ nota.fecha.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        {% if nota.observaciones %}
+                            <span style="font-size: 12px; color: #6c757d;">{{ nota.observaciones[:50] }}{% if nota.observaciones|length > 50 %}...{% endif %}</span>
+                        {% else %}
+                            <span style="color: #a0aec0;">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjetas para móvil -->
+    <div class="mobile-cards">
+        {% for nota, materia, docente in notas %}
+        <div class="nota-card nota-row" 
+             data-materia="{{ materia.nombre if materia else 'Sin materia' }}"
+             data-docente="{{ docente.username }}" if docente else "Sin docente"
+             data-tipo="{{ nota.tipo_evaluacion }}"
+             data-nota="{{ nota.nota }}">
+            <div class="nota-card-header">
+                {% if materia %}
+                <div style="display: flex; align-items: center;">
+                    <div class="avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; font-weight: bold; font-size: 18px;">
+                        {{ materia.nombre[0] }}
+                    </div>
+                    <div>
+                        <div class="nota-card-title">{{ materia.nombre }}</div>
+                        <div style="font-size: 14px; color: #718096; margin-top: 2px;">Código: {{ materia.codigo }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="display: flex; align-items: center;">
+                    <div class="avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; font-weight: bold; font-size: 18px;">
+                        ?
+                    </div>
+                    <div>
+                        <div class="nota-card-title">Materia no encontrada</div>
+                        <div style="font-size: 14px; color: #718096; margin-top: 2px;">Sin código</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="nota-card-badges">
+                    <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}" style="font-size: 16px; padding: 6px 12px; font-weight: bold;">
+                        {{ nota.nota }}
+                    </span>
+                </div>
+            </div>
+            <div class="nota-card-body">
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Docente</div>
+                    <div class="nota-card-value">
+                        {% if docente %}
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar" style="width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; margin-right: 8px; color: white; font-weight: bold; font-size: 12px;">
+                                {{ docente.username[0].upper() }}
+                            </div>
+                            <span>{{ docente.username }}</span>
+                        </div>
+                        {% else %}
+                        <span style="color: #a0aec0;">Docente no encontrado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Tipo de Evaluación</div>
+                    <div class="nota-card-value">
+                        <span class="badge badge-warning" style="font-size: 12px; padding: 4px 8px; background-color: #ffc107; color: #212529;">
+                            {{ nota.tipo_evaluacion.title() }}
+                        </span>
+                    </div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Fecha</div>
+                    <div class="nota-card-value">{{ nota.fecha.strftime('%d/%m/%Y') }}</div>
+                </div>
+                {% if nota.observaciones %}
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Observaciones</div>
+                    <div class="nota-card-value" style="font-size: 12px; color: #6c757d;">{{ nota.observaciones }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Este alumno no tiene notas registradas en el sistema.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Función para buscar notas
+function buscarNotas() {
+    const searchInput = document.getElementById('searchNota');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const notaRows = document.querySelectorAll('.nota-row');
+    
+    let visibleCount = 0;
+    
+    notaRows.forEach(row => {
+        const materia = row.getAttribute('data-materia').toLowerCase();
+        const docente = row.getAttribute('data-docente').toLowerCase();
+        const tipo = row.getAttribute('data-tipo').toLowerCase();
+        const nota = row.getAttribute('data-nota');
+        
+        // Buscar por materia, docente, tipo de evaluación o nota
+        if (searchTerm === '' || 
+            materia.includes(searchTerm) || 
+            docente.includes(searchTerm) ||
+            tipo.includes(searchTerm) || 
+            nota.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    mostrarMensajeSinResultados(visibleCount === 0 && searchTerm !== '');
+}
+
+// Función para mostrar mensaje cuando no hay resultados
+function mostrarMensajeSinResultados(mostrar) {
+    let mensajeElement = document.getElementById('sin-resultados');
+    
+    if (mostrar) {
+        if (!mensajeElement) {
+            mensajeElement = document.createElement('div');
+            mensajeElement.id = 'sin-resultados';
+            mensajeElement.className = 'alert alert-warning';
+            mensajeElement.style.marginTop = '20px';
+            mensajeElement.innerHTML = '<i class="fas fa-search"></i> No se encontraron notas con ese criterio de búsqueda.';
+            
+            // Insertar después del buscador
+            const searchContainer = document.querySelector('.search-container');
+            searchContainer.parentNode.insertBefore(mensajeElement, searchContainer.nextSibling);
+        }
+        mensajeElement.style.display = 'block';
+    } else if (mensajeElement) {
+        mensajeElement.style.display = 'none';
+    }
+}
+
+// Event listener para el campo de búsqueda
+document.addEventListener('DOMContentLoaded', function() {
+    const searchNotaInput = document.getElementById('searchNota');
+    if (searchNotaInput) {
+        searchNotaInput.addEventListener('input', buscarNotas);
+        searchNotaInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                searchNotaInput.value = '';
+                buscarNotas();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
