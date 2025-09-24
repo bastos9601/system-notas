@@ -591,6 +591,9 @@ body {
     
     .mobile-cards {
         display: block;
+        width: 100%;
+        padding: 0;
+        margin: 0;
     }
     
     .nota-card {
@@ -890,15 +893,19 @@ body {
         margin-bottom: 12px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         border-left: 4px solid #48bb78;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
     }
     
     .alumno-card-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         margin-bottom: 12px;
         padding-bottom: 8px;
         border-bottom: 1px solid #e2e8f0;
+        gap: 8px;
     }
     
     .alumno-card-title {
@@ -918,6 +925,15 @@ body {
         grid-template-columns: 1fr 1fr;
         gap: 8px;
         font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    
+    /* Para pantallas muy pequeñas, hacer el grid de una columna */
+    @media (max-width: 480px) {
+        .alumno-card-body {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
     }
     
     .alumno-card-field {
@@ -942,21 +958,43 @@ body {
         padding-top: 12px;
         border-top: 1px solid #e2e8f0;
         display: flex;
-        gap: 8px;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: space-between;
     }
     
     .alumno-card-actions .btn {
         flex: 1;
-        font-size: 0.8rem;
-        padding: 6px 12px;
+        min-width: 0;
+        font-size: 0.75rem;
+        padding: 8px 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    
+    .alumno-card-actions .btn i {
+        font-size: 0.7rem;
     }
     
     /* Estilos para el buscador */
     .search-container {
         margin-bottom: 20px;
+        width: 100%;
+    }
+    
+    .search-container .form-group {
+        width: 100%;
     }
     
     .search-container input {
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box;
         transition: all 0.3s ease;
     }
     
@@ -1074,6 +1112,44 @@ body {
     .docente-alumno-card-value {
         color: #2d3748;
         font-weight: 500;
+    }
+    
+    /* Ajustes específicos para pantallas muy pequeñas */
+    @media (max-width: 480px) {
+        .alumno-card {
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .alumno-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .alumno-card-actions {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .alumno-card-actions .btn {
+            width: 100%;
+            flex: none;
+            font-size: 0.8rem;
+            padding: 10px 12px;
+        }
+        
+        .alumno-card-actions .btn i {
+            font-size: 0.8rem;
+        }
+        
+        .alumno-card-title {
+            font-size: 0.95rem;
+        }
+        
+        .alumno-card-body {
+            font-size: 0.85rem;
+        }
     }
 }
 
