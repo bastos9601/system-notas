@@ -173,7 +173,13 @@ def admin_dashboard():
     alumnos = Alumno.query.all()
     materias = Materia.query.all()
     
-    return render_template('admin/dashboard.html', usuarios=usuarios, alumnos=alumnos, materias=materias)
+    # Agregar contador de notas a cada materia para el dashboard
+    materias_con_notas = []
+    for materia in materias:
+        notas_count = Nota.query.filter_by(materia_id=materia.id).count()
+        materias_con_notas.append((materia, notas_count))
+    
+    return render_template('admin/dashboard.html', usuarios=usuarios, alumnos=alumnos, materias=materias_con_notas)
 
 @app.route('/admin/crear_usuario', methods=['GET', 'POST'])
 def crear_usuario():
@@ -223,6 +229,43 @@ def admin_ver_notas():
     notas = db.session.query(Nota, Alumno, Materia).join(Alumno).join(Materia).order_by(Nota.fecha.desc()).all()
     
     return render_template('admin/ver_notas.html', notas=notas)
+
+@app.route('/admin/ver_alumnos')
+def admin_ver_alumnos():
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    # Obtener todos los alumnos ordenados por fecha de registro
+    alumnos = Alumno.query.order_by(Alumno.fecha_registro.desc()).all()
+    
+    return render_template('admin/ver_alumnos.html', alumnos=alumnos)
+
+@app.route('/admin/ver_usuarios')
+def admin_ver_usuarios():
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    # Obtener todos los usuarios ordenados por fecha de creación
+    usuarios = Usuario.query.order_by(Usuario.fecha_creacion.desc()).all()
+    
+    return render_template('admin/ver_usuarios.html', usuarios=usuarios)
+
+@app.route('/admin/ver_materias')
+def admin_ver_materias():
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    # Obtener todas las materias con información del docente
+    materias_query = db.session.query(Materia, Usuario).join(Usuario, Materia.docente_id == Usuario.id).order_by(Materia.id.desc()).all()
+    
+    # Crear una lista con información adicional de notas
+    materias = []
+    for materia, docente in materias_query:
+        # Contar las notas para esta materia
+        notas_count = Nota.query.filter_by(materia_id=materia.id).count()
+        materias.append((materia, docente, notas_count))
+    
+    return render_template('admin/ver_materias.html', materias=materias)
 
 @app.route('/admin/registrar_alumno', methods=['GET', 'POST'])
 def registrar_alumno():
