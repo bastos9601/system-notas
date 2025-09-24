@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Materia - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Crear Nueva Materia</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre de la Materia</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="codigo" class="form-label">Código de la Materia</label>
+                            <input type="text" class="form-control" id="codigo" name="codigo" required>
+                            <div class="form-text">Código único para identificar la materia (ej: MAT101, FIS201)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="docente_id" class="form-label">Docente Asignado</label>
+                            <select class="form-select" id="docente_id" name="docente_id" required>
+                                <option value="">Seleccionar docente...</option>
+                                {% for docente in docentes %}
+                                <option value="{{ docente.id }}">{{ docente.username }} ({{ docente.email }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Crear Materia</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

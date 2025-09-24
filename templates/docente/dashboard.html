@@ -45,19 +45,9 @@
                         <td>{{ materia.nombre }}</td>
                         <td>{{ materia.codigo }}</td>
                         <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ url_for('editar_materia', materia_id=materia.id) }}" 
-                                   class="btn btn-sm btn-warning" title="Editar materia">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button type="button" class="btn btn-sm btn-danger" 
-                                        data-materia-id="{{ materia.id }}" 
-                                        data-materia-nombre="{{ materia.nombre }}"
-                                        onclick="confirmarEliminar(this.dataset.materiaId, this.dataset.materiaNombre)" 
-                                        title="Eliminar materia">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            <span class="badge badge-success">
+                                <i class="fas fa-check"></i> Asignada
+                            </span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -88,17 +78,10 @@
                     </div>
                 </div>
                 <div class="materia-card-footer">
-                    <div class="btn-group w-100" role="group">
-                        <a href="{{ url_for('editar_materia', materia_id=materia.id) }}" 
-                           class="btn btn-sm btn-warning">
-                            <i class="fas fa-edit"></i> Editar
-                        </a>
-                        <button type="button" class="btn btn-sm btn-danger" 
-                                data-materia-id="{{ materia.id }}" 
-                                data-materia-nombre="{{ materia.nombre }}"
-                                onclick="confirmarEliminar(this.dataset.materiaId, this.dataset.materiaNombre)">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
+                    <div class="text-center">
+                        <span class="badge badge-success">
+                            <i class="fas fa-check"></i> Asignada por Administrador
+                        </span>
                     </div>
                 </div>
             </div>
@@ -107,7 +90,7 @@
         {% else %}
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i>
-            No tienes materias asignadas. <a href="{{ url_for('crear_materia') }}">Crear una materia</a>
+            No tienes materias asignadas. Contacta al administrador para que te asigne materias.
         </div>
         {% endif %}
     </div>
@@ -133,7 +116,7 @@
                         <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                         <td>{{ alumno.dni }}</td>
                         <td>
-                            <span class="badge badge-info">
+                            <span class="badge badge-info" style="background-color: #17a2b8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
                                 {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
                             </span>
                         </td>
@@ -157,7 +140,7 @@
                 <div class="docente-alumno-card-header">
                     <div class="docente-alumno-card-title">{{ alumno.nombre }} {{ alumno.apellido }}</div>
                     <div class="docente-alumno-card-badges">
-                        <span class="badge badge-info" style="font-size: 12px; padding: 4px 8px;">
+                        <span class="badge badge-info" style="background-color: #17a2b8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
                             {{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}
                         </span>
                     </div>
@@ -208,29 +191,16 @@
             </a>
         </div>
         <div>
-            <h3><i class="fas fa-book"></i> Crear Materia</h3>
-            <p>Registra una nueva materia para calificar</p>
-            <a href="{{ url_for('crear_materia') }}" class="btn btn-success">
-                <i class="fas fa-book"></i> Crear Materia
+            <h3><i class="fas fa-eye"></i> Ver Notas</h3>
+            <p>Consulta todas las notas registradas</p>
+            <a href="{{ url_for('docente_ver_notas') }}" class="btn btn-info">
+                <i class="fas fa-eye"></i> Ver Notas
             </a>
         </div>
     </div>
 </div>
 
 <script>
-
-// Función para confirmar eliminación de materia
-function confirmarEliminar(materiaId, materiaNombre) {
-    if (confirm(`¿Estás seguro de que quieres eliminar la materia "${materiaNombre}"?\n\nEsta acción eliminará también todas las notas asociadas a esta materia y no se puede deshacer.`)) {
-        // Crear formulario para enviar la solicitud de eliminación
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/docente/eliminar_materia/${materiaId}`;
-        
-        // Agregar el formulario al DOM y enviarlo
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
+// Script para funcionalidades del dashboard del docente
 </script>
 {% endblock %}

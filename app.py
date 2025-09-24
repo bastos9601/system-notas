@@ -393,6 +393,116 @@ def editar_usuario(usuario_id):
     
     return render_template('admin/editar_usuario.html', usuario=usuario)
 
+@app.route('/admin/crear_materia', methods=['GET', 'POST'])
+def admin_crear_materia():
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        codigo = request.form['codigo']
+        docente_id = request.form['docente_id']
+        
+        # Validar que los campos no estén vacíos
+        if not nombre.strip() or not codigo.strip() or not docente_id:
+            flash('Por favor, completa todos los campos requeridos', 'error')
+            return render_template('admin/crear_materia.html', docentes=Usuario.query.filter_by(tipo='docente').all())
+        
+        # Verificar si ya existe una materia con ese código
+        materia_existente = Materia.query.filter_by(codigo=codigo).first()
+        if materia_existente:
+            flash('Ya existe una materia con ese código', 'error')
+            return render_template('admin/crear_materia.html', docentes=Usuario.query.filter_by(tipo='docente').all())
+        
+        # Verificar que el docente existe
+        docente = Usuario.query.filter_by(id=docente_id, tipo='docente').first()
+        if not docente:
+            flash('El docente seleccionado no es válido', 'error')
+            return render_template('admin/crear_materia.html', docentes=Usuario.query.filter_by(tipo='docente').all())
+        
+        try:
+            # Crear la nueva materia
+            materia = Materia(
+                nombre=nombre.strip(),
+                codigo=codigo.strip(),
+                docente_id=docente_id
+            )
+            db.session.add(materia)
+            db.session.commit()
+            flash('Materia creada exitosamente', 'success')
+            return redirect(url_for('admin_dashboard'))
+            
+        except Exception as e:
+            db.session.rollback()
+            if 'UNIQUE constraint failed: materia.codigo' in str(e):
+                flash('Ya existe una materia con ese código', 'error')
+            else:
+                flash('Error al crear la materia. Inténtalo de nuevo.', 'error')
+                print(f"Error al crear materia: {e}")
+    
+    docentes = Usuario.query.filter_by(tipo='docente').all()
+    return render_template('admin/crear_materia.html', docentes=docentes)
+
+@app.route('/admin/editar_materia/<int:materia_id>', methods=['GET', 'POST'])
+def admin_editar_materia(materia_id):
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    materia = Materia.query.get_or_404(materia_id)
+    
+    if request.method == 'POST':
+        try:
+            nombre = request.form['nombre']
+            codigo = request.form['codigo']
+            docente_id = request.form['docente_id']
+            
+            # Verificar si el código ya existe en otra materia
+            materia_existente = Materia.query.filter(Materia.codigo == codigo, Materia.id != materia_id).first()
+            if materia_existente:
+                flash('Ya existe otra materia con ese código', 'error')
+            else:
+                # Verificar que el docente existe
+                docente = Usuario.query.filter_by(id=docente_id, tipo='docente').first()
+                if not docente:
+                    flash('El docente seleccionado no es válido', 'error')
+                else:
+                    materia.nombre = nombre
+                    materia.codigo = codigo
+                    materia.docente_id = docente_id
+                    db.session.commit()
+                    flash('Materia actualizada exitosamente', 'success')
+                    return redirect(url_for('admin_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error al actualizar la materia. Inténtalo de nuevo.', 'error')
+            print(f"Error al editar materia: {e}")
+    
+    docentes = Usuario.query.filter_by(tipo='docente').all()
+    return render_template('admin/editar_materia.html', materia=materia, docentes=docentes)
+
+@app.route('/admin/eliminar_materia/<int:materia_id>', methods=['POST'])
+def admin_eliminar_materia(materia_id):
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        materia = Materia.query.get_or_404(materia_id)
+        
+        # Eliminar todas las notas de la materia primero
+        Nota.query.filter_by(materia_id=materia_id).delete()
+        
+        # Eliminar la materia
+        db.session.delete(materia)
+        db.session.commit()
+        
+        flash('Materia eliminada exitosamente', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error al eliminar la materia. Inténtalo de nuevo.', 'error')
+        print(f"Error al eliminar materia: {e}")
+    
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/docente/dashboard')
 def docente_dashboard():
     if not session.get('user_id') or session.get('tipo') != 'docente':
@@ -518,112 +628,6 @@ def eliminar_nota(nota_id):
     
     return redirect(url_for('docente_ver_notas'))
 
-@app.route('/docente/crear_materia', methods=['GET', 'POST'])
-def crear_materia():
-    if not session.get('user_id') or session.get('tipo') != 'docente':
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        nombre = request.form['nombre']
-        codigo = request.form['codigo']
-        docente_id = session['user_id']
-        
-        # Validar que los campos no estén vacíos
-        if not nombre.strip() or not codigo.strip():
-            flash('Por favor, completa todos los campos requeridos', 'error')
-            return render_template('docente/crear_materia.html')
-        
-        # Verificar si ya existe una materia con ese código
-        materia_existente = Materia.query.filter_by(codigo=codigo).first()
-        if materia_existente:
-            flash('Ya existe una materia con ese código', 'error')
-            return render_template('docente/crear_materia.html')
-        
-        try:
-            # Crear la nueva materia
-                materia = Materia(
-                nombre=nombre.strip(),
-                codigo=codigo.strip(),
-                    docente_id=docente_id
-                )
-                db.session.add(materia)
-                db.session.commit()
-                flash('Materia creada exitosamente', 'success')
-                return redirect(url_for('docente_dashboard'))
-            
-        except Exception as e:
-            db.session.rollback()
-            if 'UNIQUE constraint failed: materia.codigo' in str(e):
-                flash('Ya existe una materia con ese código', 'error')
-            else:
-                flash('Error al crear la materia. Inténtalo de nuevo.', 'error')
-                print(f"Error al crear materia: {e}")
-    
-    return render_template('docente/crear_materia.html')
-
-@app.route('/docente/editar_materia/<int:materia_id>', methods=['GET', 'POST'])
-def editar_materia(materia_id):
-    if not session.get('user_id') or session.get('tipo') != 'docente':
-        return redirect(url_for('login'))
-    
-    docente_id = session['user_id']
-    
-    # Verificar que la materia pertenece al docente
-    materia = Materia.query.filter_by(id=materia_id, docente_id=docente_id).first()
-    if not materia:
-        flash('Materia no encontrada o no tienes permisos para editarla', 'error')
-        return redirect(url_for('docente_dashboard'))
-    
-    if request.method == 'POST':
-        try:
-            nombre = request.form['nombre']
-            codigo = request.form['codigo']
-            
-            # Verificar si el código ya existe en otra materia
-            materia_existente = Materia.query.filter(Materia.codigo == codigo, Materia.id != materia_id).first()
-            if materia_existente:
-                flash('Ya existe otra materia con ese código', 'error')
-            else:
-                materia.nombre = nombre
-                materia.codigo = codigo
-                db.session.commit()
-                flash('Materia actualizada exitosamente', 'success')
-                return redirect(url_for('docente_dashboard'))
-        except Exception as e:
-            db.session.rollback()
-            flash('Error al actualizar la materia. Inténtalo de nuevo.', 'error')
-            print(f"Error al editar materia: {e}")
-    
-    return render_template('docente/editar_materia.html', materia=materia)
-
-@app.route('/docente/eliminar_materia/<int:materia_id>', methods=['POST'])
-def eliminar_materia(materia_id):
-    if not session.get('user_id') or session.get('tipo') != 'docente':
-        return redirect(url_for('login'))
-    
-    docente_id = session['user_id']
-    
-    # Verificar que la materia pertenece al docente
-    materia = Materia.query.filter_by(id=materia_id, docente_id=docente_id).first()
-    if not materia:
-        flash('Materia no encontrada o no tienes permisos para eliminarla', 'error')
-        return redirect(url_for('docente_dashboard'))
-    
-    try:
-        # Eliminar todas las notas de la materia primero
-        Nota.query.filter_by(materia_id=materia_id).delete()
-        
-        # Eliminar la materia
-        db.session.delete(materia)
-        db.session.commit()
-        
-        flash('Materia eliminada exitosamente', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash('Error al eliminar la materia. Inténtalo de nuevo.', 'error')
-        print(f"Error al eliminar materia: {e}")
-    
-    return redirect(url_for('docente_dashboard'))
 
 # Inicializar base de datos y usuario admin
 def init_db():

@@ -17,6 +17,61 @@
 <div class="card">
     <h2><i class="fas fa-chart-line"></i> Calificaciones de Mis Materias</h2>
     
+    <!-- Buscador de notas -->
+    <div class="search-container" style="margin-bottom: 20px;">
+        <div class="form-group">
+            <label for="searchNotas" style="display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568;">
+                <i class="fas fa-search"></i> Buscar por alumno, materia, evaluación, nota o observaciones:
+            </label>
+            <input type="text" id="searchNotas" class="form-control" placeholder="Ingresa alumno, materia, evaluación, nota o observaciones..." 
+                   style="width: 100%; max-width: 500px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+        </div>
+        
+        <!-- Filtros adicionales -->
+        <div class="grid grid-3" style="margin-top: 15px; gap: 15px;">
+            <div class="form-group">
+                <label for="filterCiclo" style="display: block; margin-bottom: 5px; font-weight: 600; color: #4a5568;">
+                    <i class="fas fa-filter"></i> Filtrar por Ciclo:
+                </label>
+                <select id="filterCiclo" class="form-control" style="padding: 8px; border: 2px solid #e2e8f0; border-radius: 6px;">
+                    <option value="">Todos los ciclos</option>
+                    <option value="primero">Primer Ciclo</option>
+                    <option value="segundo">Segundo Ciclo</option>
+                    <option value="tercero">Tercer Ciclo</option>
+                    <option value="cuarto">Cuarto Ciclo</option>
+                    <option value="quinto">Quinto Ciclo</option>
+                    <option value="sexto">Sexto Ciclo</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="filterEstado" style="display: block; margin-bottom: 5px; font-weight: 600; color: #4a5568;">
+                    <i class="fas fa-filter"></i> Filtrar por Estado:
+                </label>
+                <select id="filterEstado" class="form-control" style="padding: 8px; border: 2px solid #e2e8f0; border-radius: 6px;">
+                    <option value="">Todos los estados</option>
+                    <option value="aprobado">Aprobado (≥13)</option>
+                    <option value="recuperacion">Recuperación (10-12)</option>
+                    <option value="desaprobado">Desaprobado (<10)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="filterMateria" style="display: block; margin-bottom: 5px; font-weight: 600; color: #4a5568;">
+                    <i class="fas fa-filter"></i> Filtrar por Materia:
+                </label>
+                <select id="filterMateria" class="form-control" style="padding: 8px; border: 2px solid #e2e8f0; border-radius: 6px;">
+                    <option value="">Todas las materias</option>
+                    {% for nota, alumno, materia in notas %}
+                        {% if loop.first or materia.nombre not in (notas|map(attribute='2.nombre')|list)[:loop.index0] %}
+                        <option value="{{ materia.nombre }}">{{ materia.nombre }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
     {% if notas %}
     <!-- Tabla para desktop -->
     <div class="table-responsive">
@@ -37,7 +92,16 @@
             </thead>
             <tbody>
                 {% for nota, alumno, materia in notas %}
-                <tr>
+                <tr class="nota-row" 
+                    data-alumno="{{ alumno.nombre }} {{ alumno.apellido }}"
+                    data-dni="{{ alumno.dni }}"
+                    data-ciclo="{{ alumno.ciclo }}"
+                    data-materia="{{ materia.nombre }}"
+                    data-evaluacion="{{ nota.tipo_evaluacion }}"
+                    data-nota="{{ nota.nota }}"
+                    data-estado="{% if nota.nota >= 13 %}aprobado{% elif nota.nota >= 10 %}recuperacion{% else %}desaprobado{% endif %}"
+                    data-fecha="{{ nota.fecha.strftime('%d/%m/%Y') }}"
+                    data-observaciones="{{ nota.observaciones or '' }}">
                     <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                     <td>{{ alumno.dni }}</td>
                     <td>
@@ -82,7 +146,16 @@
     <!-- Tarjetas para móvil -->
     <div class="mobile-cards">
         {% for nota, alumno, materia in notas %}
-        <div class="nota-card">
+        <div class="nota-card nota-row" 
+             data-alumno="{{ alumno.nombre }} {{ alumno.apellido }}"
+             data-dni="{{ alumno.dni }}"
+             data-ciclo="{{ alumno.ciclo }}"
+             data-materia="{{ materia.nombre }}"
+             data-evaluacion="{{ nota.tipo_evaluacion }}"
+             data-nota="{{ nota.nota }}"
+             data-estado="{% if nota.nota >= 13 %}aprobado{% elif nota.nota >= 10 %}recuperacion{% else %}desaprobado{% endif %}"
+             data-fecha="{{ nota.fecha.strftime('%d/%m/%Y') }}"
+             data-observaciones="{{ nota.observaciones or '' }}">
             <div class="nota-card-header">
                 <div class="nota-card-title">{{ alumno.nombre }} {{ alumno.apellido }}</div>
                 <div class="nota-card-badges">
@@ -187,6 +260,105 @@ function confirmarEliminar(notaId) {
         form.submit();
     }
 }
+
+// Funciones para el buscador y filtros
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchNotas');
+    const filterCiclo = document.getElementById('filterCiclo');
+    const filterEstado = document.getElementById('filterEstado');
+    const filterMateria = document.getElementById('filterMateria');
+    
+    function filtrarNotas() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const cicloSeleccionado = filterCiclo.value;
+        const estadoSeleccionado = filterEstado.value;
+        const materiaSeleccionada = filterMateria.value;
+        
+        const notaRows = document.querySelectorAll('.nota-row');
+        let visibleCount = 0;
+        
+        notaRows.forEach(row => {
+            const alumno = row.getAttribute('data-alumno').toLowerCase();
+            const dni = row.getAttribute('data-dni').toLowerCase();
+            const ciclo = row.getAttribute('data-ciclo');
+            const materia = row.getAttribute('data-materia').toLowerCase();
+            const evaluacion = row.getAttribute('data-evaluacion').toLowerCase();
+            const nota = row.getAttribute('data-nota');
+            const estado = row.getAttribute('data-estado');
+            const fecha = row.getAttribute('data-fecha').toLowerCase();
+            const observaciones = row.getAttribute('data-observaciones').toLowerCase();
+            
+            // Verificar búsqueda de texto
+            const matchesSearch = searchTerm === '' || 
+                alumno.includes(searchTerm) || 
+                dni.includes(searchTerm) || 
+                materia.includes(searchTerm) || 
+                evaluacion.includes(searchTerm) || 
+                nota.includes(searchTerm) || 
+                fecha.includes(searchTerm) || 
+                observaciones.includes(searchTerm);
+            
+            // Verificar filtros
+            const matchesCiclo = cicloSeleccionado === '' || ciclo === cicloSeleccionado;
+            const matchesEstado = estadoSeleccionado === '' || estado === estadoSeleccionado;
+            const matchesMateria = materiaSeleccionada === '' || materia === materiaSeleccionada.toLowerCase();
+            
+            if (matchesSearch && matchesCiclo && matchesEstado && matchesMateria) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Mostrar mensaje si no hay resultados
+        mostrarMensajeSinResultados(visibleCount === 0 && (searchTerm !== '' || cicloSeleccionado !== '' || estadoSeleccionado !== '' || materiaSeleccionada !== ''));
+    }
+    
+    function mostrarMensajeSinResultados(mostrar) {
+        let mensajeElement = document.getElementById('sin-resultados-notas');
+        
+        if (mostrar) {
+            if (!mensajeElement) {
+                mensajeElement = document.createElement('div');
+                mensajeElement.id = 'sin-resultados-notas';
+                mensajeElement.className = 'alert alert-warning';
+                mensajeElement.style.marginTop = '20px';
+                mensajeElement.innerHTML = '<i class="fas fa-search"></i> No se encontraron notas que coincidan con los criterios de búsqueda.';
+                
+                // Insertar después del buscador
+                const searchContainer = document.querySelector('.search-container');
+                searchContainer.parentNode.insertBefore(mensajeElement, searchContainer.nextSibling);
+            }
+            mensajeElement.style.display = 'block';
+        } else if (mensajeElement) {
+            mensajeElement.style.display = 'none';
+        }
+    }
+    
+    // Event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', filtrarNotas);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                filtrarNotas();
+            }
+        });
+    }
+    
+    if (filterCiclo) {
+        filterCiclo.addEventListener('change', filtrarNotas);
+    }
+    
+    if (filterEstado) {
+        filterEstado.addEventListener('change', filtrarNotas);
+    }
+    
+    if (filterMateria) {
+        filterMateria.addEventListener('change', filtrarNotas);
+    }
+});
 
 // Funciones para el menú hamburguesa
 function toggleMenu() {
