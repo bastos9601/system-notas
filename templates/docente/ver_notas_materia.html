@@ -46,13 +46,14 @@
                     <th>Alumno</th>
                     <th>Tipo de Evaluación</th>
                     <th>Nota</th>
+                    <th>Estado</th>
                     <th>Fecha</th>
                     <th>Observaciones</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for nota, alumno in notas %}
+                {% for nota, alumno, estado, clase_estado in notas %}
                 <tr class="nota-row" 
                     data-alumno="{{ alumno.nombre }} {{ alumno.apellido }}"
                     data-tipo="{{ nota.tipo_evaluacion }}"
@@ -76,6 +77,11 @@
                     <td>
                         <span class="badge badge-{{ 'success' if nota.nota >= 13 else 'warning' if nota.nota >= 10 else 'danger' }}" style="font-size: 14px; padding: 6px 10px; font-weight: bold;">
                             {{ nota.nota }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {{ clase_estado }}" style="font-size: 12px; padding: 4px 8px; font-weight: bold;">
+                            {{ estado }}
                         </span>
                     </td>
                     <td>{{ nota.fecha.strftime('%d/%m/%Y') }}</td>
@@ -104,7 +110,7 @@
 
     <!-- Tarjetas para móvil -->
     <div class="mobile-cards">
-        {% for nota, alumno in notas %}
+        {% for nota, alumno, estado, clase_estado in notas %}
         <div class="nota-card nota-row" 
              data-alumno="{{ alumno.nombre }} {{ alumno.apellido }}"
              data-tipo="{{ nota.tipo_evaluacion }}"
@@ -131,6 +137,14 @@
                     <div class="nota-card-value">
                         <span class="badge badge-warning" style="font-size: 12px; padding: 4px 8px; background-color: #ffc107; color: #212529;">
                             {{ nota.tipo_evaluacion.title() }}
+                        </span>
+                    </div>
+                </div>
+                <div class="nota-card-field">
+                    <div class="nota-card-label">Estado</div>
+                    <div class="nota-card-value">
+                        <span class="badge {{ clase_estado }}" style="font-size: 12px; padding: 4px 8px; font-weight: bold;">
+                            {{ estado }}
                         </span>
                     </div>
                 </div>

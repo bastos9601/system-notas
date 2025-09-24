@@ -712,13 +712,28 @@ def docente_ver_notas_materia(materia_id):
         return redirect(url_for('docente_ver_materias'))
     
     # Obtener las notas de la materia específica con información del alumno
-    notas = db.session.query(Nota, Alumno).join(Alumno).filter(Nota.materia_id == materia_id).order_by(Nota.fecha.desc()).all()
+    notas_query = db.session.query(Nota, Alumno).join(Alumno).filter(Nota.materia_id == materia_id).order_by(Nota.fecha.desc()).all()
     
-    # Actualizar notas que no tengan tipo_evaluacion
-    for nota, alumno in notas:
+    # Crear una lista con información adicional incluyendo el estado
+    notas = []
+    for nota, alumno in notas_query:
+        # Actualizar notas que no tengan tipo_evaluacion
         if not nota.tipo_evaluacion or nota.tipo_evaluacion.strip() == '':
             nota.tipo_evaluacion = 'Parcial'  # Valor por defecto
             db.session.commit()
+        
+        # Calcular el estado de la nota
+        if nota.nota >= 13:
+            estado = "Aprobado"
+            clase_estado = "badge-success"  # Verde
+        elif nota.nota >= 10:
+            estado = "Recuperación"
+            clase_estado = "badge-warning"  # Amarillo
+        else:
+            estado = "Desaprobado"
+            clase_estado = "badge-danger"   # Rojo
+        
+        notas.append((nota, alumno, estado, clase_estado))
     
     return render_template('docente/ver_notas_materia.html', materia=materia, notas=notas)
 
@@ -778,7 +793,19 @@ def admin_ver_notas_alumno(alumno_id):
             
             materia = Materia.query.get(nota.materia_id)
             docente = Usuario.query.get(materia.docente_id) if materia else None
-            notas.append((nota, materia, docente))
+            
+            # Calcular el estado de la nota
+            if nota.nota >= 13:
+                estado = "Aprobado"
+                clase_estado = "badge-success"  # Verde
+            elif nota.nota >= 10:
+                estado = "Recuperación"
+                clase_estado = "badge-warning"  # Amarillo
+            else:
+                estado = "Desaprobado"
+                clase_estado = "badge-danger"   # Rojo
+            
+            notas.append((nota, materia, docente, estado, clase_estado))
         
         return render_template('admin/ver_notas_alumno.html', alumno=alumno, notas=notas)
         
