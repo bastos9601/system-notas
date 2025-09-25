@@ -5,49 +5,35 @@ Este archivo es el punto de entrada para la aplicación en producción
 """
 
 import os
-from app import app, db
+import sys
 
 def init_app():
-    """Inicializar la aplicación"""
+    """Inicializar la aplicación de forma segura"""
     print("🚀 Inicializando aplicación...")
     
-    # Crear tablas si no existen
-    with app.app_context():
-        try:
-            db.create_all()
-            print("✅ Base de datos inicializada")
-        except Exception as e:
-            print(f"❌ Error al inicializar base de datos: {e}")
-            raise e
-    
-    # Crear usuario administrador si no existe
     try:
-        from app import Usuario
-        from werkzeug.security import generate_password_hash
+        from app import app, db
+        from error_handler import init_database_safely, create_admin_user_safely
         
-        with app.app_context():
-            admin = Usuario.query.filter_by(username='admin').first()
-            if not admin:
-                admin = Usuario(
-                    username='admin',
-                    email='admin@sistema.com',
-                    password_hash=generate_password_hash('admin123'),
-                    tipo='admin'
-                )
-                db.session.add(admin)
-                db.session.commit()
-                print("✅ Usuario administrador creado")
-            else:
-                print("✅ Usuario administrador ya existe")
+        # Inicializar base de datos de forma segura
+        if not init_database_safely():
+            print("⚠️  Base de datos no se pudo inicializar completamente")
+        
+        # Crear usuario administrador de forma segura
+        if not create_admin_user_safely():
+            print("⚠️  Usuario administrador no se pudo crear completamente")
+        
+        print("✅ Aplicación inicializada correctamente")
+        return app
+        
     except Exception as e:
-        print(f"❌ Error al crear usuario administrador: {e}")
-        # No lanzar excepción aquí para no bloquear el inicio
+        print(f"❌ Error crítico al inicializar la aplicación: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 # Inicializar la aplicación
-init_app()
-
-# Exportar la aplicación para WSGI
-application = app
+application = init_app()
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    application.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

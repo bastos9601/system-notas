@@ -38,6 +38,16 @@ FLASK_DEBUG=False
 4. **Error en la inicialización de la base de datos**
    - Solución: Revisa los logs de Koyeb para ver el error específico
 
+5. **Error en el dashboard del administrador**
+   - Solución: El nuevo código maneja errores de forma más robusta
+   - Se ha añadido manejo de errores específico para esta ruta
+
+#### Nuevas Mejoras Implementadas:
+- ✅ **Manejo robusto de errores** en `admin_dashboard`
+- ✅ **Inicialización segura** de la base de datos
+- ✅ **Plantilla de error** personalizada
+- ✅ **Script de diagnóstico** para identificar problemas
+
 #### Verificar Logs en Koyeb:
 1. Ve al panel de Koyeb
 2. Selecciona tu aplicación
@@ -57,9 +67,26 @@ FLASK_DEBUG=False
 # Verificar configuración localmente
 python koyeb_setup.py
 
+# Diagnóstico completo
+python koyeb_debug.py
+
 # Probar la aplicación localmente
 python wsgi.py
 ```
+
+### 6. Diagnóstico Avanzado
+
+Si sigues teniendo problemas, ejecuta el diagnóstico:
+
+```bash
+python koyeb_debug.py
+```
+
+Este script verificará:
+- ✅ Variables de entorno
+- ✅ Conexión a base de datos
+- ✅ Importaciones de módulos
+- ✅ Plantillas requeridas
 
 ### 6. Solución de Problemas
 

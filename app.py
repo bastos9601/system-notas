@@ -116,17 +116,34 @@ def admin_dashboard():
     if not session.get('user_id') or session.get('tipo') != 'admin':
         return redirect(url_for('login'))
     
-    usuarios = Usuario.query.all()
-    alumnos = Alumno.query.all()
-    materias = Materia.query.all()
+    try:
+        # Obtener datos de forma segura
+        usuarios = Usuario.query.all() or []
+        alumnos = Alumno.query.all() or []
+        materias = Materia.query.all() or []
+        
+        # Agregar contador de notas a cada materia para el dashboard
+        materias_con_notas = []
+        for materia in materias:
+            try:
+                notas_count = Nota.query.filter_by(materia_id=materia.id).count()
+                materias_con_notas.append((materia, notas_count))
+            except Exception as e:
+                print(f"Error al contar notas para materia {materia.id}: {e}")
+                materias_con_notas.append((materia, 0))
+        
+        return render_template('admin/dashboard_moderno.html', 
+                             usuarios=usuarios, 
+                             alumnos=alumnos, 
+                             materias=materias_con_notas)
     
-    # Agregar contador de notas a cada materia para el dashboard
-    materias_con_notas = []
-    for materia in materias:
-        notas_count = Nota.query.filter_by(materia_id=materia.id).count()
-        materias_con_notas.append((materia, notas_count))
-    
-    return render_template('admin/dashboard_moderno.html', usuarios=usuarios, alumnos=alumnos, materias=materias_con_notas)
+    except Exception as e:
+        print(f"Error en admin_dashboard: {e}")
+        # En caso de error, renderizar con datos vacíos
+        return render_template('admin/dashboard_moderno.html', 
+                             usuarios=[], 
+                             alumnos=[], 
+                             materias=[])
 
 @app.route('/admin/crear_usuario', methods=['GET', 'POST'])
 def crear_usuario():
