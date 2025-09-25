@@ -27,11 +27,34 @@ def clear_flash_messages():
     """Limpia todos los mensajes flash de la sesión"""
     get_flashed_messages()
 
+# Función auxiliar para convertir números de ciclo a texto
+def convertir_ciclo_a_texto(ciclo):
+    """Convierte números de ciclo a texto y normaliza a minúsculas"""
+    if ciclo is None:
+        return None
+    
+    # Convertir números a texto y normalizar
+    ciclo_map = {
+        '1': 'primero', '2': 'segundo', '3': 'tercero',
+        '4': 'cuarto', '5': 'quinto', '6': 'sexto',
+        'I': 'primero', 'II': 'segundo', 'III': 'tercero',
+        'IV': 'cuarto', 'V': 'quinto', 'VI': 'sexto',
+        'Primero': 'primero', 'Segundo': 'segundo', 'Tercero': 'tercero',
+        'Cuarto': 'cuarto', 'Quinto': 'quinto', 'Sexto': 'sexto',
+        'primero': 'primero', 'segundo': 'segundo', 'tercero': 'tercero',
+        'cuarto': 'cuarto', 'quinto': 'quinto', 'sexto': 'sexto'
+    }
+    
+    return ciclo_map.get(str(ciclo), str(ciclo).lower())
+
 # Context processor para limpiar mensajes flash automáticamente
 @app.context_processor
 def inject_flash_cleanup():
     """Limpia mensajes flash duplicados automáticamente"""
-    return dict()
+    return {
+        'clear_flash_messages': clear_flash_messages,
+        'convertir_ciclo_a_texto': convertir_ciclo_a_texto
+    }
 
 # Modelos de la base de datos
 class Usuario(db.Model):
@@ -574,21 +597,35 @@ def eliminar_usuario(usuario_id):
             flash('No puedes eliminar tu propio usuario', 'error')
             return redirect(url_for('admin_dashboard'))
         
-        # Si es un docente, eliminar sus materias primero
+        # Manejar eliminación según el tipo de usuario
         if usuario.tipo == 'docente':
-            # Eliminar todas las notas de las materias del docente
+            # Si es un docente, eliminar sus materias y notas primero
             materias_docente = Materia.query.filter_by(docente_id=usuario_id).all()
             for materia in materias_docente:
+                # Eliminar todas las notas de esta materia
                 Nota.query.filter_by(materia_id=materia.id).delete()
             
             # Eliminar las materias del docente
             Materia.query.filter_by(docente_id=usuario_id).delete()
+            flash(f'Docente "{usuario.username}" eliminado exitosamente junto con sus materias y notas', 'success')
+            
+        elif usuario.tipo == 'alumno':
+            # Si es un alumno, eliminar sus notas primero
+            alumno = Alumno.query.filter_by(usuario_id=usuario_id).first()
+            if alumno:
+                # Eliminar todas las notas del alumno
+                Nota.query.filter_by(alumno_id=alumno.id).delete()
+                # Eliminar el registro del alumno
+                db.session.delete(alumno)
+            flash(f'Alumno "{usuario.username}" eliminado exitosamente junto con sus notas', 'success')
+            
+        else:
+            flash(f'Usuario "{usuario.username}" eliminado exitosamente', 'success')
         
         # Eliminar el usuario
         db.session.delete(usuario)
         db.session.commit()
         
-        flash('Usuario eliminado exitosamente', 'success')
     except Exception as e:
         db.session.rollback()
         flash('Error al eliminar el usuario. Inténtalo de nuevo.', 'error')

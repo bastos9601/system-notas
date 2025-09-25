@@ -567,10 +567,11 @@
         // Datos de alumnos por ciclo
         const alumnosPorCiclo = {
             {% for alumno in alumnos %}
-            "{{ alumno.ciclo }}": {
+            "{{ alumno.ciclo|lower }}": {
                 id: {{ alumno.id }},
                 nombre: "{{ alumno.nombre }} {{ alumno.apellido }}",
-                dni: "{{ alumno.dni }}"
+                dni: "{{ alumno.dni }}",
+                ciclo_original: "{{ alumno.ciclo }}"
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         };
@@ -587,10 +588,10 @@
                 if (cicloSeleccionado) {
                     alumnoSelect.disabled = false;
                     
-                    // Agrupar alumnos por ciclo
+                    // Agrupar alumnos por ciclo (comparación normalizada)
                     const alumnosDelCiclo = [];
                     {% for alumno in alumnos %}
-                    if ("{{ alumno.ciclo }}" === cicloSeleccionado) {
+                    if ("{{ alumno.ciclo|lower }}" === cicloSeleccionado.toLowerCase()) {
                         alumnosDelCiclo.push({
                             id: {{ alumno.id }},
                             nombre: "{{ alumno.nombre }} {{ alumno.apellido }}",

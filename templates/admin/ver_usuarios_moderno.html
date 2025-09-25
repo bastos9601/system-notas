@@ -131,7 +131,7 @@
                 {% if usuarios %}
                 <div class="users-grid">
                     {% for usuario in usuarios %}
-                    <div class="user-card" data-usuario="{{ usuario.username|lower }}" data-email="{{ usuario.email|lower }}" data-tipo="{{ usuario.tipo|lower }}">
+                    <div class="user-card" data-user-id="{{ usuario.id }}" data-usuario="{{ usuario.username|lower }}" data-email="{{ usuario.email|lower }}" data-tipo="{{ usuario.tipo|lower }}">
                         <div class="user-header">
                             <div class="user-avatar">
                                 {% if usuario.tipo == 'admin' %}
@@ -160,12 +160,18 @@
                         </div>
                         
                         <div class="user-actions">
-                            <a href="{{ url_for('editar_usuario', usuario_id=usuario.id) }}" class="btn-action edit">
+                            <a href="{{ url_for('editar_usuario', usuario_id=usuario.id) }}" class="btn-action edit" title="Editar usuario">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <button onclick="eliminarUsuario({{ usuario.id }}, '{{ usuario.username }}')" class="btn-action delete">
+                            {% if usuario.id != session.user_id %}
+                            <button onclick="eliminarUsuario({{ usuario.id }}, '{{ usuario.username }}')" class="btn-action delete" title="Eliminar usuario">
                                 <i class="fas fa-trash"></i>
                             </button>
+                            {% else %}
+                            <button class="btn-action delete disabled" title="No puedes eliminar tu propio usuario" disabled>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -586,6 +592,17 @@ html, body {
     transform: scale(1.1);
 }
 
+.btn-action.disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-action.disabled:hover {
+    background: #6c757d;
+    transform: none;
+}
+
 /* Empty State */
 .empty-state {
     text-align: center;
@@ -681,9 +698,30 @@ document.getElementById('searchUsuario').addEventListener('input', function() {
 
 // Función para eliminar usuario
 function eliminarUsuario(id, username) {
-    if (confirm(`¿Estás seguro de que quieres eliminar al usuario "${username}"?`)) {
-        // Aquí iría la lógica para eliminar el usuario
-        alert('Función de eliminación en desarrollo');
+    // Obtener información del usuario desde la tarjeta
+    const userCard = document.querySelector(`[data-user-id="${id}"]`);
+    const userType = userCard ? userCard.querySelector('.user-type').textContent : 'usuario';
+    
+    let message = `¿Estás seguro de que quieres eliminar al ${userType.toLowerCase()} "${username}"?\n\n`;
+    
+    // Agregar información específica según el tipo de usuario
+    if (userType.toLowerCase().includes('docente')) {
+        message += '⚠️ ADVERTENCIA: Se eliminarán también todas las materias y notas asociadas a este docente.\n\n';
+    } else if (userType.toLowerCase().includes('alumno')) {
+        message += '⚠️ ADVERTENCIA: Se eliminarán también todas las notas de este alumno.\n\n';
+    }
+    
+    message += 'Esta acción no se puede deshacer.';
+    
+    if (confirm(message)) {
+        // Crear un formulario para enviar la petición POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/eliminar_usuario/${id}`;
+        
+        // Añadir el formulario al DOM y enviarlo
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>
