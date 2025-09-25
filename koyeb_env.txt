@@ -1,0 +1,9 @@
+# Variables de entorno para Koyeb
+# Configura estas variables en el panel de Koyeb
+
+SECRET_KEY=tu_clave_secreta_muy_segura_para_produccion_cambiar_esto
+FLASK_ENV=production
+FLASK_DEBUG=False
+
+# La DATABASE_URL será proporcionada automáticamente por Koyeb
+# cuando configures una base de datos PostgreSQL
