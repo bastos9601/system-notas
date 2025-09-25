@@ -36,8 +36,25 @@
                     <option value="">Selecciona el tipo</option>
                     <option value="admin">Administrador</option>
                     <option value="docente">Docente</option>
+                    <option value="alumno">Alumno</option>
                 </select>
             </div>
+        </div>
+        
+        <!-- Campo para seleccionar alumno (solo visible cuando tipo es alumno) -->
+        <div class="form-group" id="alumno-selection" style="display: none;">
+            <label for="alumno_id">Seleccionar Alumno:</label>
+            <select id="alumno_id" name="alumno_id" class="form-control">
+                <option value="">-- Seleccionar Alumno --</option>
+                {% for alumno in alumnos %}
+                <option value="{{ alumno.id }}">
+                    {{ alumno.nombre }} {{ alumno.apellido }} - DNI: {{ alumno.dni }} - Ciclo: {{ alumno.ciclo.title() }}
+                </option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">
+                Solo se muestran alumnos que no tienen usuario asociado.
+            </small>
         </div>
         
         <div class="d-flex gap-10">
@@ -56,6 +73,23 @@
     document.addEventListener('DOMContentLoaded', function() {
         const crearUsuarioForm = document.querySelector('form[action="{{ url_for("crear_usuario") }}"]');
         const crearUsuarioBtn = document.getElementById('crearUsuarioBtn');
+        const tipoSelect = document.getElementById('tipo');
+        const alumnoSelection = document.getElementById('alumno-selection');
+        const alumnoSelect = document.getElementById('alumno_id');
+        
+        // Mostrar/ocultar campo de selección de alumno
+        if (tipoSelect && alumnoSelection) {
+            tipoSelect.addEventListener('change', function() {
+                if (this.value === 'alumno') {
+                    alumnoSelection.style.display = 'block';
+                    alumnoSelect.required = true;
+                } else {
+                    alumnoSelection.style.display = 'none';
+                    alumnoSelect.required = false;
+                    alumnoSelect.value = '';
+                }
+            });
+        }
         
         if (crearUsuarioForm && crearUsuarioBtn) {
             crearUsuarioForm.addEventListener('submit', function(e) {

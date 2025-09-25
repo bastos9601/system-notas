@@ -39,6 +39,27 @@
     </div>
 </div>
 
+<!-- Acciones Rápidas -->
+<div class="card">
+    <h2><i class="fas fa-bolt"></i> Acciones Rápidas</h2>
+    <div class="grid grid-2">
+        <div class="action-buttons">
+            <a href="{{ url_for('crear_usuario') }}" class="btn btn-success">
+                <i class="fas fa-user-plus"></i> Crear Usuario
+            </a>
+            <a href="{{ url_for('crear_usuario_alumno') }}" class="btn btn-info">
+                <i class="fas fa-user-graduate"></i> Crear Usuario para Alumno
+            </a>
+            <a href="{{ url_for('registrar_alumno') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Registrar Alumno
+            </a>
+            <a href="{{ url_for('admin_crear_materia') }}" class="btn btn-warning">
+                <i class="fas fa-book"></i> Crear Materia
+            </a>
+        </div>
+    </div>
+</div>
+
 <div class="grid grid-2">
     <div class="card">
         <h2><i class="fas fa-users"></i> Usuarios Registrados</h2>

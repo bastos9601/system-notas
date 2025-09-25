@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Notas - Sistema de Notas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="student-dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sistema de Notas</h2>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-name">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+            <div class="user-role">Estudiante</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('alumno_dashboard') }}" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('alumno_ver_materias') }}" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>Mis Cursos</span>
+            </a>
+            <a href="{{ url_for('alumno_ver_notas') }}" class="nav-item active">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Mis Calificaciones</span>
+            </a>
+            <a href="{{ url_for('alumno_mi_perfil') }}" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Mi Perfil</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Mis Calificaciones</h1>
+            <p>Todas tus notas y calificaciones</p>
+        </div>
+
+        {% if notas %}
+        <!-- Resumen por Materia -->
+        <div class="summary-grid">
+            {% for materia, promedio, total_notas, docente in resumen_materias %}
+            <div class="summary-card">
+                <h4>{{ materia.nombre }}</h4>
+                <div class="stat-number">{{ "%.2f"|format(promedio) }}</div>
+                <div class="stat-detail">{{ total_notas }} nota(s) | Docente: {{ docente.username }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Todas mis Notas -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-list"></i> Todas mis Notas</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Docente</th>
+                            <th>Tipo de Evaluación</th>
+                            <th>Nota</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nota, materia, docente, estado, clase_estado in notas %}
+                        <tr>
+                            <td>
+                                <strong>{{ materia.nombre }}</strong><br>
+                                <small class="text-muted">{{ materia.codigo }}</small>
+                            </td>
+                            <td>{{ docente.username }}</td>
+                            <td>{{ nota.tipo_evaluacion }}</td>
+                            <td><strong>{{ nota.nota }}</strong></td>
+                            <td>
+                                <span class="status-badge {{ clase_estado }}">
+                                    {% if estado == 'Aprobado' %}
+                                        <i class="fas fa-check"></i>
+                                    {% elif estado == 'Recuperación' %}
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    {% else %}
+                                        <i class="fas fa-times"></i>
+                                    {% endif %}
+                                    {{ estado }}
+                                </span>
+                            </td>
+                            <td>{{ nota.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if nota.observaciones %}
+                                    {{ nota.observaciones }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h3>No tienes notas registradas</h3>
+            <p>Las notas aparecerán aquí cuando tus docentes las registren.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.student-dashboard {
+    display: flex;
+    min-height: 100vh;
+    height: 100vh;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.user-role {
+    color: #28a745;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.nav-item.active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-left-color: #1976d2;
+}
+
+.nav-item i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 20px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.nav-item.logout {
+    color: #dc3545;
+}
+
+.nav-item.logout:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.content-header {
+    margin-bottom: 30px;
+}
+
+.content-header h1 {
+    font-size: 2.2rem;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.content-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 20px;
+}
+
+.card-header h3 {
+    font-size: 1.3rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Summary Cards */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.summary-card h4 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.summary-card .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #3498db;
+    margin-bottom: 8px;
+}
+
+.summary-card .stat-detail {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+</style>
+</body>
+</html>

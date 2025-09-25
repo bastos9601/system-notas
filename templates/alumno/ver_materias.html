@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Materias - Sistema de Notas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="student-dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sistema de Notas</h2>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-name">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+            <div class="user-role">Estudiante</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('alumno_dashboard') }}" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('alumno_ver_materias') }}" class="nav-item active">
+                <i class="fas fa-book"></i>
+                <span>Mis Cursos</span>
+            </a>
+            <a href="{{ url_for('alumno_ver_notas') }}" class="nav-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Mis Calificaciones</span>
+            </a>
+            <a href="{{ url_for('alumno_mi_perfil') }}" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Mi Perfil</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Mis Cursos</h1>
+            <p>Tus materias y su progreso académico</p>
+        </div>
+
+        <!-- Materias -->
+        {% if materias %}
+        <div class="courses-grid">
+            {% for materia, docente, total_notas, promedio_materia, ultima_nota in materias %}
+            <div class="course-card">
+                <div class="course-header">
+                    <h3><i class="fas fa-book"></i> {{ materia.nombre }}</h3>
+                    <span class="course-code">{{ materia.codigo }}</span>
+                </div>
+                
+                <div class="course-body">
+                    <div class="course-info">
+                        <div class="info-item">
+                            <strong>Docente:</strong> {{ docente.username }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Email:</strong> {{ docente.email }}
+                        </div>
+                    </div>
+                    
+                    <div class="course-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ total_notas }}</div>
+                            <div class="stat-label">Total Notas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">
+                                {% if promedio_materia > 0 %}
+                                    {{ "%.1f"|format(promedio_materia) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                            <div class="stat-label">Promedio</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">
+                                {% if ultima_nota %}
+                                    {{ ultima_nota.nota }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                            <div class="stat-label">Última Nota</div>
+                        </div>
+                    </div>
+                    
+                    {% if ultima_nota %}
+                    <div class="course-info">
+                        <div class="info-item">
+                            <strong>Última Evaluación:</strong> {{ ultima_nota.tipo_evaluacion }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Fecha:</strong> {{ ultima_nota.fecha.strftime('%d/%m/%Y') }}
+                        </div>
+                        {% if ultima_nota.observaciones %}
+                        <div class="info-item">
+                            <strong>Observaciones:</strong> {{ ultima_nota.observaciones }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="course-footer">
+                    {% if promedio_materia >= 13 %}
+                        <span class="status-badge badge-success">
+                            <i class="fas fa-check"></i> Aprobado
+                        </span>
+                    {% elif promedio_materia >= 10 %}
+                        <span class="status-badge badge-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Recuperación
+                        </span>
+                    {% elif promedio_materia >= 2 %}
+                        <span class="status-badge badge-danger">
+                            <i class="fas fa-times"></i> Desaprobado
+                        </span>
+                    {% else %}
+                        <span class="status-badge badge-secondary">
+                            <i class="fas fa-minus"></i> Sin Notas
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Resumen General -->
+        <div class="summary-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-pie"></i> Resumen General</h3>
+            </div>
+            <div class="card-body">
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <div class="stat-number">{{ materias|length }}</div>
+                        <div class="stat-label">Total Materias</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-number">{{ materias|selectattr('3', 'ge', 13)|list|length }}</div>
+                        <div class="stat-label">Aprobadas</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-number">{{ materias|selectattr('3', 'ge', 10)|selectattr('3', 'lt', 13)|list|length }}</div>
+                        <div class="stat-label">En Recuperación</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-number">{{ materias|selectattr('3', 'ge', 2)|selectattr('3', 'lt', 10)|list|length }}</div>
+                        <div class="stat-label">Desaprobadas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <h3>No tienes materias asignadas</h3>
+            <p>Contacta con tu administrador para que te asignen materias.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.student-dashboard {
+    display: flex;
+    min-height: 100vh;
+    height: 100vh;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.user-role {
+    color: #28a745;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.nav-item.active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-left-color: #1976d2;
+}
+
+.nav-item i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 20px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.nav-item.logout {
+    color: #dc3545;
+}
+
+.nav-item.logout:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.content-header {
+    margin-bottom: 30px;
+}
+
+.content-header h1 {
+    font-size: 2.2rem;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.content-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Courses Grid */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.course-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.course-header {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.course-header h3 {
+    font-size: 1.3rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.course-code {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.course-body {
+    padding: 25px;
+}
+
+.course-info {
+    margin-bottom: 20px;
+}
+
+.info-item {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.info-item strong {
+    color: #333;
+}
+
+.course-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #3498db;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.course-footer {
+    padding: 15px 25px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-secondary {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+/* Summary Card */
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 20px;
+}
+
+.card-header h3 {
+    font-size: 1.3rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.summary-stat {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.summary-stat .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #3498db;
+    margin-bottom: 5px;
+}
+
+.summary-stat .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #999;
+    font-size: 0.9rem;
+}
+</style>
+</body>
+</html>

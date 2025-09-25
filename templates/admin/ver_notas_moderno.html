@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas - Sistema de Notas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="admin-dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-user-shield"></i> Administrador</h2>
+            <p>{{ session.nombre if session.nombre else 'Admin' }}</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin_ver_usuarios') }}" class="nav-item">
+                <i class="fas fa-users"></i> Usuarios
+            </a>
+            <a href="{{ url_for('admin_ver_alumnos') }}" class="nav-item">
+                <i class="fas fa-user-graduate"></i> Alumnos
+            </a>
+            <a href="{{ url_for('admin_ver_materias') }}" class="nav-item">
+                <i class="fas fa-book"></i> Materias
+            </a>
+            <a href="{{ url_for('admin_ver_notas') }}" class="nav-item active">
+                <i class="fas fa-clipboard-list"></i> Notas
+            </a>
+            <a href="{{ url_for('admin_mi_perfil') }}" class="nav-item">
+                <i class="fas fa-user-cog"></i> Mi Perfil
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Notas del Sistema</h1>
+            <p>Gestiona todas las calificaciones registradas</p>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ total_notas }}</div>
+                    <div class="stat-label">Total Notas</div>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ notas_aprobadas }}</div>
+                    <div class="stat-label">Aprobadas</div>
+                </div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ notas_recuperacion }}</div>
+                    <div class="stat-label">Recuperación</div>
+                </div>
+            </div>
+
+            <div class="stat-card danger">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ notas_desaprobadas }}</div>
+                    <div class="stat-label">Desaprobadas</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-card">
+            <div class="card-header">
+                <h3><i class="fas fa-filter"></i> Filtros</h3>
+            </div>
+            <div class="card-body">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="filterMateria">Materia:</label>
+                        <select id="filterMateria" class="filter-select">
+                            <option value="">Todas las materias</option>
+                            {% for materia in materias %}
+                            <option value="{{ materia.id }}">{{ materia.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterAlumno">Alumno:</label>
+                        <select id="filterAlumno" class="filter-select">
+                            <option value="">Todos los alumnos</option>
+                            {% for alumno in alumnos %}
+                            <option value="{{ alumno.id }}">{{ alumno.nombre }} {{ alumno.apellido }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterTipo">Tipo de Evaluación:</label>
+                        <select id="filterTipo" class="filter-select">
+                            <option value="">Todos los tipos</option>
+                            <option value="Parcial">Parcial</option>
+                            <option value="Final">Final</option>
+                            <option value="Trabajo">Trabajo</option>
+                            <option value="Proyecto">Proyecto</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buscador -->
+        <div class="search-card">
+            <div class="card-header">
+                <h3><i class="fas fa-search"></i> Buscar Notas</h3>
+            </div>
+            <div class="card-body">
+                <div class="search-container">
+                    <input type="text" id="searchNota" placeholder="Buscar por alumno, materia o docente..." class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Notas -->
+        <div class="notas-card">
+            <div class="card-header">
+                <h3><i class="fas fa-list"></i> Lista de Notas ({{ total_notas }} registradas)</h3>
+            </div>
+            <div class="card-body">
+                {% if notas %}
+                <div class="notas-table-container">
+                    <table class="notas-table">
+                        <thead>
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Materia</th>
+                                <th>Docente</th>
+                                <th>Tipo</th>
+                                <th>Nota</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for nota in notas %}
+                            <tr class="nota-row" 
+                                data-materia="{{ nota.materia.id }}" 
+                                data-alumno="{{ nota.alumno.id }}" 
+                                data-tipo="{{ nota.tipo_evaluacion|lower if nota.tipo_evaluacion else '' }}"
+                                data-alumno-nombre="{{ (nota.alumno.nombre + ' ' + nota.alumno.apellido)|lower }}"
+                                data-materia-nombre="{{ nota.materia.nombre|lower }}"
+                                data-docente-nombre="{{ nota.materia.docente.username|lower if nota.materia.docente else '' }}">
+                                <td>
+                                    <div class="alumno-info">
+                                        <div class="alumno-avatar">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div class="alumno-details">
+                                            <strong>{{ nota.alumno.nombre }} {{ nota.alumno.apellido }}</strong>
+                                            <small>{{ nota.alumno.dni }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="materia-info">
+                                        <strong>{{ nota.materia.nombre }}</strong>
+                                        <small>{{ nota.materia.codigo }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="docente-info">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                        <span>{{ nota.materia.docente.username if nota.materia.docente else 'Sin docente' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="tipo-badge {{ nota.tipo_evaluacion|lower if nota.tipo_evaluacion else 'sin-tipo' }}">
+                                        {{ nota.tipo_evaluacion or 'Sin tipo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="nota-value {{ 'aprobada' if nota.nota >= 13 else 'recuperacion' if nota.nota >= 10 else 'desaprobada' }}">
+                                        {{ nota.nota }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="estado-badge {{ 'aprobada' if nota.nota >= 13 else 'recuperacion' if nota.nota >= 10 else 'desaprobada' }}">
+                                        {% if nota.nota >= 13 %}
+                                            <i class="fas fa-check"></i> Aprobada
+                                        {% elif nota.nota >= 10 %}
+                                            <i class="fas fa-exclamation"></i> Recuperación
+                                        {% else %}
+                                            <i class="fas fa-times"></i> Desaprobada
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fecha">{{ nota.fecha_formatted }}</span>
+                                </td>
+                                <td>
+                                    <div class="nota-actions">
+                                        <a href="{{ url_for('editar_nota', nota_id=nota.id) }}" class="btn-action edit" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button onclick="eliminarNota({{ nota.id }}, '{{ nota.alumno.nombre }} {{ nota.alumno.apellido }}')" class="btn-action delete" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>No hay notas registradas</h3>
+                    <p>Las notas aparecerán aquí cuando los docentes las registren</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Reset para ocupar toda la pantalla - v2.0 */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Estilos para el dashboard del administrador */
+.admin-dashboard {
+    display: flex;
+    min-height: 100vh;
+    height: 100vh;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.user-role {
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.nav-item.active {
+    background: rgba(52, 152, 219, 0.2);
+    border-left-color: #3498db;
+}
+
+.nav-item i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 20px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.nav-item.logout {
+    color: #dc3545;
+}
+
+.nav-item.logout:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.content-header {
+    margin-bottom: 30px;
+}
+
+.content-header h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.content-header p {
+    margin: 0;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    border-left: 4px solid;
+}
+
+.stat-card.primary { border-left-color: #1976d2; }
+.stat-card.success { border-left-color: #28a745; }
+.stat-card.warning { border-left-color: #ffc107; }
+.stat-card.danger { border-left-color: #dc3545; }
+
+.stat-icon {
+    margin-right: 15px;
+    font-size: 2rem;
+}
+
+.stat-card.primary .stat-icon { color: #1976d2; }
+.stat-card.success .stat-icon { color: #28a745; }
+.stat-card.warning .stat-icon { color: #ffc107; }
+.stat-card.danger .stat-icon { color: #dc3545; }
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    line-height: 1;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Cards */
+.filters-card, .search-card, .notas-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.card-header i {
+    margin-right: 8px;
+    color: #1976d2;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Filters */
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.filter-select {
+    padding: 10px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+/* Search */
+.search-container {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 45px 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+/* Table */
+.notas-table-container {
+    overflow-x: auto;
+}
+
+.notas-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.notas-table th {
+    background: #f8f9fa;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.notas-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.nota-row:hover {
+    background-color: #f8f9fa;
+}
+
+/* Info cells */
+.alumno-info, .materia-info, .docente-info {
+    display: flex;
+    align-items: center;
+}
+
+.alumno-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #28a745;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.alumno-details, .materia-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.alumno-details strong, .materia-info strong {
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.alumno-details small, .materia-info small {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.docente-info i {
+    margin-right: 8px;
+    color: #17a2b8;
+}
+
+/* Badges */
+.tipo-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.tipo-badge.parcial { background: #e3f2fd; color: #1976d2; }
+.tipo-badge.final { background: #fff3e0; color: #f57c00; }
+.tipo-badge.trabajo { background: #e8f5e8; color: #2e7d32; }
+.tipo-badge.proyecto { background: #fce4ec; color: #c2185b; }
+.tipo-badge.sin-tipo { background: #f5f5f5; color: #666; }
+
+.nota-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.nota-value.aprobada { background: #d4edda; color: #155724; }
+.nota-value.recuperacion { background: #fff3cd; color: #856404; }
+.nota-value.desaprobada { background: #f8d7da; color: #721c24; }
+
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.estado-badge.aprobada { background: #d4edda; color: #155724; }
+.estado-badge.recuperacion { background: #fff3cd; color: #856404; }
+.estado-badge.desaprobada { background: #f8d7da; color: #721c24; }
+
+.fecha {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Actions */
+.nota-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-action.edit {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-action.edit:hover {
+    background: #138496;
+    transform: scale(1.1);
+}
+
+.btn-action.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-action.delete:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.empty-state p {
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-dashboard {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .notas-table-container {
+        font-size: 0.8rem;
+    }
+    
+    .notas-table th,
+    .notas-table td {
+        padding: 10px 8px;
+    }
+}
+</style>
+
+<script>
+// Función de búsqueda
+document.getElementById('searchNota').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const notaRows = document.querySelectorAll('.nota-row');
+    
+    notaRows.forEach(row => {
+        const alumnoNombre = row.dataset.alumnoNombre;
+        const materiaNombre = row.dataset.materiaNombre;
+        const docenteNombre = row.dataset.docenteNombre;
+        
+        if (alumnoNombre.includes(searchTerm) || materiaNombre.includes(searchTerm) || docenteNombre.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Función de filtros
+document.getElementById('filterMateria').addEventListener('change', function() {
+    filterTable();
+});
+
+document.getElementById('filterAlumno').addEventListener('change', function() {
+    filterTable();
+});
+
+document.getElementById('filterTipo').addEventListener('change', function() {
+    filterTable();
+});
+
+function filterTable() {
+    const materiaFilter = document.getElementById('filterMateria').value;
+    const alumnoFilter = document.getElementById('filterAlumno').value;
+    const tipoFilter = document.getElementById('filterTipo').value.toLowerCase();
+    
+    const notaRows = document.querySelectorAll('.nota-row');
+    
+    notaRows.forEach(row => {
+        const materiaId = row.dataset.materia;
+        const alumnoId = row.dataset.alumno;
+        const tipo = row.dataset.tipo;
+        
+        let show = true;
+        
+        if (materiaFilter && materiaId !== materiaFilter) show = false;
+        if (alumnoFilter && alumnoId !== alumnoFilter) show = false;
+        if (tipoFilter && tipo !== tipoFilter) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+// Función para eliminar nota
+function eliminarNota(id, alumno) {
+    if (confirm(`¿Estás seguro de que quieres eliminar la nota del alumno "${alumno}"?`)) {
+        // Aquí iría la lógica para eliminar la nota
+        alert('Función de eliminación en desarrollo');
+    }
+}
+</script>
+</body>
+</html>

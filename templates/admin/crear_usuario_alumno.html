@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Usuario para Alumno{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Crear Usuario para Alumno</h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-plus"></i> Información del Usuario
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="alumno_id">Seleccionar Alumno *</label>
+                            <select class="form-control" id="alumno_id" name="alumno_id" required>
+                                <option value="">-- Seleccionar Alumno --</option>
+                                {% for alumno in alumnos %}
+                                <option value="{{ alumno.id }}">
+                                    {{ alumno.nombre }} {{ alumno.apellido }} - DNI: {{ alumno.dni }} - Ciclo: {{ alumno.ciclo.title() }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                Solo se muestran alumnos que no tienen usuario asociado.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="username">Nombre de Usuario *</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <small class="form-text text-muted">
+                                El nombre de usuario debe ser único en el sistema.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <small class="form-text text-muted">
+                                El email debe ser único en el sistema.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Contraseña *</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <small class="form-text text-muted">
+                                La contraseña será encriptada y almacenada de forma segura.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm_password">Confirmar Contraseña *</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Información:</strong> Al crear este usuario, el alumno podrá acceder al sistema con sus credenciales y ver sus notas en el panel de alumno.
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Crear Usuario
+                            </button>
+                            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Alumnos Disponibles</h6>
+                    <p class="text-muted">
+                        Se muestran solo los alumnos que no tienen un usuario asociado.
+                    </p>
+                    
+                    {% if alumnos %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Alumno</th>
+                                    <th>Ciclo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alumno in alumnos %}
+                                <tr>
+                                    <td>
+                                        <small>{{ alumno.nombre }} {{ alumno.apellido }}</small><br>
+                                        <small class="text-muted">DNI: {{ alumno.dni }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">{{ alumno.ciclo.title() }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        No hay alumnos disponibles para crear usuario.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Las contraseñas no coinciden');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    password.addEventListener('change', validatePassword);
+    confirmPassword.addEventListener('keyup', validatePassword);
+});
+</script>
+{% endblock %}

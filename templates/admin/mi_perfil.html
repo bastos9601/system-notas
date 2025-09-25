@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Sistema de Notas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="admin-dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-user-shield"></i> Administrador</h2>
+            <p>{{ session.nombre if session.nombre else 'Admin' }}</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin_ver_usuarios') }}" class="nav-item">
+                <i class="fas fa-users"></i> Usuarios
+            </a>
+            <a href="{{ url_for('admin_ver_alumnos') }}" class="nav-item">
+                <i class="fas fa-user-graduate"></i> Alumnos
+            </a>
+            <a href="{{ url_for('admin_ver_materias') }}" class="nav-item">
+                <i class="fas fa-book"></i> Materias
+            </a>
+            <a href="{{ url_for('admin_ver_notas') }}" class="nav-item">
+                <i class="fas fa-clipboard-list"></i> Notas
+            </a>
+            <a href="{{ url_for('admin_mi_perfil') }}" class="nav-item active">
+                <i class="fas fa-user-cog"></i> Mi Perfil
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Mi Perfil</h1>
+            <p>Gestiona tu información personal y configuración de cuenta de administrador</p>
+        </div>
+
+        <!-- Formulario de Perfil -->
+        <div class="profile-card">
+            <div class="card-header">
+                <h3><i class="fas fa-user-edit"></i> Editar Información Personal</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="username">Nombre de Usuario *</label>
+                            <input type="text" id="username" name="username" value="{{ session.username }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" value="{{ usuario.email if usuario else '' }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Nueva Contraseña</label>
+                            <div class="password-input-container">
+                                <input type="password" id="password" name="password" placeholder="Dejar vacío para mantener la actual">
+                                <button type="button" class="password-toggle" id="passwordToggle">
+                                    <i class="fas fa-eye" id="passwordIcon"></i>
+                                </button>
+                            </div>
+                            <small class="form-help">Solo completa si quieres cambiar tu contraseña</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirm_password">Confirmar Nueva Contraseña</label>
+                            <div class="password-input-container">
+                                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmar nueva contraseña">
+                                <button type="button" class="password-toggle" id="confirmPasswordToggle">
+                                    <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Información de la Cuenta -->
+        <div class="account-info-card">
+            <div class="card-header">
+                <h3><i class="fas fa-info-circle"></i> Información de la Cuenta</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Usuario:</strong> {{ session.username }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Tipo de Usuario:</strong> <span class="status-admin">Administrador</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Estado:</strong> <span class="status-active">Activo</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Permisos:</strong> Acceso Completo
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración del Sistema -->
+        <div class="system-config-card">
+            <div class="card-header">
+                <h3><i class="fas fa-cogs"></i> Configuración del Sistema</h3>
+            </div>
+            <div class="card-body">
+                <div class="config-grid">
+                    <div class="config-item">
+                        <strong>Versión del Sistema:</strong> 2.0
+                    </div>
+                    <div class="config-item">
+                        <strong>Base de Datos:</strong> SQLite
+                    </div>
+                    <div class="config-item">
+                        <strong>Última Actualización:</strong> Hoy
+                    </div>
+                    <div class="config-item">
+                        <strong>Modo de Desarrollo:</strong> Activo
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Reset para ocupar toda la pantalla - v2.0 */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Estilos para el dashboard del administrador */
+.admin-dashboard {
+    display: flex;
+    min-height: 100vh;
+    height: 100vh;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.user-role {
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.nav-item.active {
+    background: rgba(52, 152, 219, 0.2);
+    border-left-color: #3498db;
+}
+
+.nav-item i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 20px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.nav-item.logout {
+    color: #dc3545;
+}
+
+.nav-item.logout:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.content-header {
+    margin-bottom: 30px;
+}
+
+.content-header h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.content-header p {
+    margin: 0;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Cards */
+.profile-card, .account-info-card, .system-config-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.card-header i {
+    margin-right: 8px;
+    color: #1976d2;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+/* Form Styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    padding-right: 50px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+}
+
+.password-toggle:hover {
+    color: #3498db;
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.password-toggle:focus {
+    outline: none;
+    color: #3498db;
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.password-toggle i {
+    font-size: 16px;
+}
+
+.form-help {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+}
+
+/* Buttons */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #1976d2;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #1565c0;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    color: white;
+    text-decoration: none;
+}
+
+/* Info Grid */
+.info-grid, .config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.info-item, .config-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #1976d2;
+}
+
+.info-item strong, .config-item strong {
+    color: #333;
+    margin-right: 8px;
+}
+
+.status-active {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.status-admin {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-dashboard {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .info-grid, .config-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+    <script>
+        // Funcionalidad para mostrar/ocultar contraseña
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle para nueva contraseña
+            const passwordToggle = document.getElementById('passwordToggle');
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('passwordIcon');
+
+            if (passwordToggle) {
+                passwordToggle.addEventListener('click', function() {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        passwordIcon.classList.remove('fa-eye');
+                        passwordIcon.classList.add('fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        passwordIcon.classList.remove('fa-eye-slash');
+                        passwordIcon.classList.add('fa-eye');
+                    }
+                });
+            }
+
+            // Toggle para confirmar contraseña
+            const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+            const confirmPasswordInput = document.getElementById('confirm_password');
+            const confirmPasswordIcon = document.getElementById('confirmPasswordIcon');
+
+            if (confirmPasswordToggle) {
+                confirmPasswordToggle.addEventListener('click', function() {
+                    if (confirmPasswordInput.type === 'password') {
+                        confirmPasswordInput.type = 'text';
+                        confirmPasswordIcon.classList.remove('fa-eye');
+                        confirmPasswordIcon.classList.add('fa-eye-slash');
+                    } else {
+                        confirmPasswordInput.type = 'password';
+                        confirmPasswordIcon.classList.remove('fa-eye-slash');
+                        confirmPasswordIcon.classList.add('fa-eye');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

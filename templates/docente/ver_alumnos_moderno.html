@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumnos - Sistema de Notas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .docente-dashboard {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #ffffff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            border-right: 1px solid #e9ecef;
+            overflow-y: hidden;
+            height: 100vh;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+            overflow-y: auto;
+            height: calc(100vh - 200px);
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidebar-nav {
+            scrollbar-width: none;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border-left-color: #3498db;
+        }
+
+        .nav-item.active {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border-left-color: #3498db;
+        }
+
+        .nav-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid #27ae60;
+            text-align: center;
+        }
+
+        .stat-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-card-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-card-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .search-section {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .search-section h3 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-section h3 i {
+            color: #27ae60;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .alumnos-section {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .alumnos-section h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alumnos-section h2 i {
+            color: #27ae60;
+        }
+
+        .alumnos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .alumno-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .alumno-card:hover {
+            background: #ffffff;
+            border-color: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.15);
+        }
+
+        .alumno-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .alumno-card-title {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .alumno-card-badge {
+            background: #e8f5e8;
+            color: #27ae60;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .alumno-card-body {
+            margin-bottom: 15px;
+        }
+
+        .alumno-card-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .alumno-card-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .alumno-card-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .alumno-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #495057;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .docente-dashboard {
+                flex-direction: column;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+
+            .alumnos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="docente-dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-chalkboard-teacher"></i> Docente</h2>
+                <p>{{ session.nombre if session.nombre else session.username }}</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('docente_dashboard') }}" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="{{ url_for('docente_ver_materias') }}" class="nav-item">
+                    <i class="fas fa-book"></i> Mis Materias
+                </a>
+                <a href="{{ url_for('docente_ver_alumnos') }}" class="nav-item active">
+                    <i class="fas fa-user-graduate"></i> Alumnos
+                </a>
+                <a href="{{ url_for('docente_ver_notas') }}" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i> Notas
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1><i class="fas fa-user-graduate"></i> Alumnos</h1>
+                <p>Consulta la información de todos los estudiantes</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="stat-card-number">{{ alumnos|length }}</div>
+                    <div class="stat-card-label">Total Alumnos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-card-number">{{ ciclos_unicos if ciclos_unicos else 0 }}</div>
+                    <div class="stat-card-label">Ciclos Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-card-number">{{ alumnos_con_usuario if alumnos_con_usuario else 0 }}</div>
+                    <div class="stat-card-label">Con Usuario</div>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <h3><i class="fas fa-search"></i> Buscar Alumnos</h3>
+                <input type="text" id="searchAlumno" class="search-input" placeholder="Buscar por nombre, apellido, DNI o ciclo...">
+            </div>
+
+            <!-- Alumnos Section -->
+            <div class="alumnos-section">
+                <h2><i class="fas fa-list"></i> Lista de Alumnos ({{ alumnos|length }} registrados)</h2>
+                
+                {% if alumnos %}
+                <div class="alumnos-grid" id="alumnosGrid">
+                    {% for alumno in alumnos %}
+                    <div class="alumno-card" 
+                         data-nombre="{{ alumno.nombre|lower }}" 
+                         data-apellido="{{ alumno.apellido|lower }}"
+                         data-dni="{{ alumno.dni|lower }}"
+                         data-ciclo="{{ alumno.ciclo|lower if alumno.ciclo else '' }}">
+                        <div class="alumno-card-header">
+                            <div class="alumno-card-title">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+                            <span class="alumno-card-badge">{{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}</span>
+                        </div>
+                        
+                        <div class="alumno-card-body">
+                            <div class="alumno-card-field">
+                                <span class="alumno-card-label">DNI:</span>
+                                <span class="alumno-card-value">{{ alumno.dni }}</span>
+                            </div>
+                            <div class="alumno-card-field">
+                                <span class="alumno-card-label">Ciclo:</span>
+                                <span class="alumno-card-value">{{ alumno.ciclo.title() if alumno.ciclo else 'Sin ciclo' }}</span>
+                            </div>
+                            <div class="alumno-card-field">
+                                <span class="alumno-card-label">Email:</span>
+                                <span class="alumno-card-value">{{ alumno.email or '-' }}</span>
+                            </div>
+                            <div class="alumno-card-field">
+                                <span class="alumno-card-label">Teléfono:</span>
+                                <span class="alumno-card-value">{{ alumno.telefono or '-' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="alumno-card-footer">
+                            <a href="{{ url_for('agregar_nota') }}?alumno_id={{ alumno.id }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Agregar Nota
+                            </a>
+                            <a href="{{ url_for('docente_ver_notas') }}?alumno_id={{ alumno.id }}" class="btn btn-success">
+                                <i class="fas fa-eye"></i> Ver Notas
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-user-graduate"></i>
+                    <h3>No hay alumnos registrados</h3>
+                    <p>No se encontraron alumnos en el sistema.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función de búsqueda
+        document.getElementById('searchAlumno').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const alumnoCards = document.querySelectorAll('.alumno-card');
+            
+            alumnoCards.forEach(card => {
+                const nombre = card.dataset.nombre;
+                const apellido = card.dataset.apellido;
+                const dni = card.dataset.dni;
+                const ciclo = card.dataset.ciclo;
+                
+                if (nombre.includes(searchTerm) || apellido.includes(searchTerm) || 
+                    dni.includes(searchTerm) || ciclo.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

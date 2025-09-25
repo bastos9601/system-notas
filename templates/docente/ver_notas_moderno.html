@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas - Sistema de Notas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .docente-dashboard {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #ffffff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            border-right: 1px solid #e9ecef;
+            overflow-y: hidden;
+            height: 100vh;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+            overflow-y: auto;
+            height: calc(100vh - 200px);
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidebar-nav {
+            scrollbar-width: none;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border-left-color: #3498db;
+        }
+
+        .nav-item.active {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border-left-color: #3498db;
+        }
+
+        .nav-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .stat-card.aprobadas {
+            border-left: 4px solid #27ae60;
+        }
+
+        .stat-card.recuperacion {
+            border-left: 4px solid #f39c12;
+        }
+
+        .stat-card.desaprobadas {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .stat-card.total {
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-card-icon.aprobadas {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .stat-card-icon.recuperacion {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .stat-card-icon.desaprobadas {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .stat-card-icon.total {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .stat-card-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-card-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filters-section {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .filters-section h3 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filters-section h3 i {
+            color: #3498db;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            color: #495057;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .filter-select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .notas-section {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .notas-section h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notas-section h2 i {
+            color: #3498db;
+        }
+
+        .notas-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .notas-table th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .notas-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+
+        .notas-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .nota-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .nota-badge.aprobada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .nota-badge.recuperacion {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .nota-badge.desaprobada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #495057;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .docente-dashboard {
+                flex-direction: column;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .notas-table {
+                font-size: 0.9rem;
+            }
+
+            .notas-table th,
+            .notas-table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="docente-dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-chalkboard-teacher"></i> Docente</h2>
+                <p>{{ session.nombre if session.nombre else session.username }}</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('docente_dashboard') }}" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="{{ url_for('docente_ver_materias') }}" class="nav-item">
+                    <i class="fas fa-book"></i> Mis Materias
+                </a>
+                <a href="{{ url_for('docente_ver_alumnos') }}" class="nav-item">
+                    <i class="fas fa-user-graduate"></i> Alumnos
+                </a>
+                <a href="{{ url_for('docente_ver_notas') }}" class="nav-item active">
+                    <i class="fas fa-clipboard-list"></i> Notas
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1><i class="fas fa-clipboard-list"></i> Notas</h1>
+                {% if alumno_seleccionado %}
+                    <p>Calificaciones de <strong>{{ alumno_seleccionado.nombre }} {{ alumno_seleccionado.apellido }}</strong> ({{ alumno_seleccionado.dni }})</p>
+                {% else %}
+                    <p>Gestiona todas las calificaciones registradas</p>
+                {% endif %}
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-cards">
+                <div class="stat-card total">
+                    <div class="stat-card-icon total">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="stat-card-number">{{ total_notas if total_notas else 0 }}</div>
+                    <div class="stat-card-label">Total Notas</div>
+                </div>
+                <div class="stat-card aprobadas">
+                    <div class="stat-card-icon aprobadas">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-card-number">{{ notas_aprobadas if notas_aprobadas else 0 }}</div>
+                    <div class="stat-card-label">Aprobadas</div>
+                </div>
+                <div class="stat-card recuperacion">
+                    <div class="stat-card-icon recuperacion">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-card-number">{{ notas_recuperacion if notas_recuperacion else 0 }}</div>
+                    <div class="stat-card-label">Recuperación</div>
+                </div>
+                <div class="stat-card desaprobadas">
+                    <div class="stat-card-icon desaprobadas">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-card-number">{{ notas_desaprobadas if notas_desaprobadas else 0 }}</div>
+                    <div class="stat-card-label">Desaprobadas</div>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3><i class="fas fa-filter"></i> Filtros</h3>
+                    {% if alumno_seleccionado %}
+                        <a href="{{ url_for('docente_ver_notas') }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">
+                            <i class="fas fa-times"></i> Ver Todas las Notas
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Materia:</label>
+                        <select class="filter-select" id="filterMateria">
+                            <option value="">Todas las materias</option>
+                            {% for materia in materias %}
+                            <option value="{{ materia.id }}">{{ materia.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Alumno:</label>
+                        <select class="filter-select" id="filterAlumno">
+                            <option value="">Todos los alumnos</option>
+                            {% for alumno in alumnos %}
+                            <option value="{{ alumno.id }}" {% if alumno_id_filtro and alumno.id|string == alumno_id_filtro %}selected{% endif %}>{{ alumno.nombre }} {{ alumno.apellido }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Estado:</label>
+                        <select class="filter-select" id="filterEstado">
+                            <option value="">Todos los estados</option>
+                            <option value="aprobada">Aprobada</option>
+                            <option value="recuperacion">Recuperación</option>
+                            <option value="desaprobada">Desaprobada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notas Section -->
+            <div class="notas-section">
+                {% if alumno_seleccionado %}
+                    <h2><i class="fas fa-list"></i> Notas de {{ alumno_seleccionado.nombre }} {{ alumno_seleccionado.apellido }} ({{ total_notas if total_notas else 0 }} registradas)</h2>
+                {% else %}
+                    <h2><i class="fas fa-list"></i> Lista de Notas ({{ total_notas if total_notas else 0 }} registradas)</h2>
+                {% endif %}
+                
+                {% if notas %}
+                <table class="notas-table" id="notasTable">
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Materia</th>
+                            <th>Tipo de Evaluación</th>
+                            <th>Nota</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Observaciones</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nota, alumno, materia in notas %}
+                        <tr class="nota-row" 
+                            data-materia="{{ materia.id if materia else '' }}"
+                            data-alumno="{{ alumno.id if alumno else '' }}"
+                            data-estado="{% if nota.nota >= 13 %}aprobada{% elif nota.nota >= 10 %}recuperacion{% else %}desaprobada{% endif %}">
+                            <td>
+                                <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong><br>
+                                <small class="text-muted">{{ alumno.dni }}</small>
+                            </td>
+                            <td>{{ materia.nombre if materia else 'Materia eliminada' }}</td>
+                            <td>{{ nota.tipo_evaluacion }}</td>
+                            <td><strong>{{ nota.nota }}</strong></td>
+                            <td>
+                                {% if nota.nota >= 13 %}
+                                    <span class="nota-badge aprobada">Aprobada</span>
+                                {% elif nota.nota >= 10 %}
+                                    <span class="nota-badge recuperacion">Recuperación</span>
+                                {% else %}
+                                    <span class="nota-badge desaprobada">Desaprobada</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ nota.fecha.strftime('%d/%m/%Y') if nota.fecha else 'N/A' }}</td>
+                            <td>{{ nota.observaciones or '-' }}</td>
+                            <td>
+                                <a href="{{ url_for('editar_nota', nota_id=nota.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="{{ url_for('eliminar_nota', nota_id=nota.id) }}" class="btn btn-danger" 
+                                   onclick="return confirm('¿Estás seguro de que quieres eliminar esta nota?')">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    {% if alumno_seleccionado %}
+                        <h3>No hay notas registradas</h3>
+                        <p>No se encontraron notas para {{ alumno_seleccionado.nombre }} {{ alumno_seleccionado.apellido }}.</p>
+                    {% else %}
+                        <h3>No hay notas registradas</h3>
+                        <p>No se encontraron notas en el sistema.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones de filtrado
+        document.getElementById('filterMateria').addEventListener('change', filterNotas);
+        document.getElementById('filterAlumno').addEventListener('change', function() {
+            const alumnoId = this.value;
+            if (alumnoId) {
+                window.location.href = "{{ url_for('docente_ver_notas') }}?alumno_id=" + alumnoId;
+            } else {
+                window.location.href = "{{ url_for('docente_ver_notas') }}";
+            }
+        });
+        document.getElementById('filterEstado').addEventListener('change', filterNotas);
+
+        function filterNotas() {
+            const materiaFilter = document.getElementById('filterMateria').value;
+            const estadoFilter = document.getElementById('filterEstado').value;
+            
+            const notaRows = document.querySelectorAll('.nota-row');
+            
+            notaRows.forEach(row => {
+                const materia = row.dataset.materia;
+                const estado = row.dataset.estado;
+                
+                let show = true;
+                
+                if (materiaFilter && materia !== materiaFilter) show = false;
+                if (estadoFilter && estado !== estadoFilter) show = false;
+                
+                row.style.display = show ? 'table-row' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
