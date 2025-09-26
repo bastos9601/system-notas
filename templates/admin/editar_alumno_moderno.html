@@ -639,14 +639,14 @@
                             <label for="ciclo" class="form-label">
                                 <i class="fas fa-graduation-cap"></i> Ciclo
                             </label>
-                            <select id="ciclo" name="ciclo" class="form-control">
+                            <select id="ciclo" name="ciclo" class="form-control" required>
                                 <option value="">Seleccionar ciclo</option>
-                                <option value="Primero" {% if alumno.ciclo == 'Primero' %}selected{% endif %}>Primer Ciclo</option>
-                                <option value="Segundo" {% if alumno.ciclo == 'Segundo' %}selected{% endif %}>Segundo Ciclo</option>
-                                <option value="Tercero" {% if alumno.ciclo == 'Tercero' %}selected{% endif %}>Tercer Ciclo</option>
-                                <option value="Cuarto" {% if alumno.ciclo == 'Cuarto' %}selected{% endif %}>Cuarto Ciclo</option>
-                                <option value="Quinto" {% if alumno.ciclo == 'Quinto' %}selected{% endif %}>Quinto Ciclo</option>
-                                <option value="Sexto" {% if alumno.ciclo == 'Sexto' %}selected{% endif %}>Sexto Ciclo</option>
+                                <option value="primero" {% if alumno.ciclo == 'primero' %}selected{% endif %}>Primer Ciclo</option>
+                                <option value="segundo" {% if alumno.ciclo == 'segundo' %}selected{% endif %}>Segundo Ciclo</option>
+                                <option value="tercero" {% if alumno.ciclo == 'tercero' %}selected{% endif %}>Tercer Ciclo</option>
+                                <option value="cuarto" {% if alumno.ciclo == 'cuarto' %}selected{% endif %}>Cuarto Ciclo</option>
+                                <option value="quinto" {% if alumno.ciclo == 'quinto' %}selected{% endif %}>Quinto Ciclo</option>
+                                <option value="sexto" {% if alumno.ciclo == 'sexto' %}selected{% endif %}>Sexto Ciclo</option>
                             </select>
                         </div>
                     </div>
@@ -690,6 +690,76 @@
                     }, 300);
                 }, 5000);
             });
+
+            // Validación del formulario
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const dni = document.getElementById('dni').value.trim();
+                    const nombre = document.getElementById('nombre').value.trim();
+                    const apellido = document.getElementById('apellido').value.trim();
+                    const email = document.getElementById('email').value.trim();
+                    const ciclo = document.getElementById('ciclo').value;
+
+                    // Validar campos requeridos
+                    if (!dni) {
+                        e.preventDefault();
+                        alert('Por favor, ingresa el DNI del alumno');
+                        document.getElementById('dni').focus();
+                        return;
+                    }
+
+                    if (!nombre) {
+                        e.preventDefault();
+                        alert('Por favor, ingresa el nombre del alumno');
+                        document.getElementById('nombre').focus();
+                        return;
+                    }
+
+                    if (!apellido) {
+                        e.preventDefault();
+                        alert('Por favor, ingresa el apellido del alumno');
+                        document.getElementById('apellido').focus();
+                        return;
+                    }
+
+                    if (!ciclo) {
+                        e.preventDefault();
+                        alert('Por favor, selecciona el ciclo del alumno');
+                        document.getElementById('ciclo').focus();
+                        return;
+                    }
+
+                    // Validar DNI (solo números)
+                    if (!/^\d+$/.test(dni)) {
+                        e.preventDefault();
+                        alert('El DNI debe contener solo números');
+                        document.getElementById('dni').focus();
+                        return;
+                    }
+
+                    // Validar email si se proporciona
+                    if (email && !isValidEmail(email)) {
+                        e.preventDefault();
+                        alert('Por favor, ingresa un email válido');
+                        document.getElementById('email').focus();
+                        return;
+                    }
+
+                    // Mostrar mensaje de confirmación
+                    if (confirm('¿Estás seguro de que quieres guardar los cambios?')) {
+                        // El formulario se enviará normalmente
+                    } else {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Función para validar email
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
         });
     </script>
 </body>
