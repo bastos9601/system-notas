@@ -114,22 +114,6 @@
             <form method="POST">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="nombre" class="form-label">Nombre</label>
-                        <input type="text" id="nombre" name="nombre" class="form-control" 
-                               value="{{ alumno.nombre }}" 
-                               placeholder="Ingresa tu nombre" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="apellido" class="form-label">Apellido</label>
-                        <input type="text" id="apellido" name="apellido" class="form-control" 
-                               value="{{ alumno.apellido }}" 
-                               placeholder="Ingresa tu apellido" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" id="email" name="email" class="form-control" 
                                value="{{ alumno.email or '' }}" 
@@ -141,27 +125,6 @@
                         <input type="text" id="telefono" name="telefono" class="form-control" 
                                value="{{ alumno.telefono or '' }}" 
                                placeholder="Ingresa tu teléfono">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ciclo" class="form-label">Ciclo</label>
-                        <select id="ciclo" name="ciclo" class="form-control" required>
-                            <option value="">Selecciona tu ciclo</option>
-                            <option value="primero" {% if alumno.ciclo == 'primero' %}selected{% endif %}>Primer Ciclo</option>
-                            <option value="segundo" {% if alumno.ciclo == 'segundo' %}selected{% endif %}>Segundo Ciclo</option>
-                            <option value="tercero" {% if alumno.ciclo == 'tercero' %}selected{% endif %}>Tercer Ciclo</option>
-                            <option value="cuarto" {% if alumno.ciclo == 'cuarto' %}selected{% endif %}>Cuarto Ciclo</option>
-                            <option value="quinto" {% if alumno.ciclo == 'quinto' %}selected{% endif %}>Quinto Ciclo</option>
-                            <option value="sexto" {% if alumno.ciclo == 'sexto' %}selected{% endif %}>Sexto Ciclo</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
-                        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" 
-                               value="{{ alumno.fecha_nacimiento.strftime('%Y-%m-%d') if alumno.fecha_nacimiento else '' }}">
                     </div>
                 </div>
                 
@@ -677,33 +640,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     if (form) {
         form.addEventListener('submit', function(e) {
-            const nombre = document.getElementById('nombre').value.trim();
-            const apellido = document.getElementById('apellido').value.trim();
-            const ciclo = document.getElementById('ciclo').value;
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-
-            // Validar campos requeridos
-            if (!nombre) {
-                e.preventDefault();
-                alert('Por favor, ingresa tu nombre');
-                document.getElementById('nombre').focus();
-                return;
-            }
-
-            if (!apellido) {
-                e.preventDefault();
-                alert('Por favor, ingresa tu apellido');
-                document.getElementById('apellido').focus();
-                return;
-            }
-
-            if (!ciclo) {
-                e.preventDefault();
-                alert('Por favor, selecciona tu ciclo');
-                document.getElementById('ciclo').focus();
-                return;
-            }
 
             // Validar email si se proporciona
             if (email && !isValidEmail(email)) {

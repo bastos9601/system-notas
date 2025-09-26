@@ -34,10 +34,11 @@
             background: #ffffff;
             border-radius: 16px;
             padding: 40px 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e9ecef;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
 
         .login-card::before {
@@ -47,7 +48,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #3498db, #2980b9);
+            background: linear-gradient(90deg, #667eea, #764ba2);
         }
 
         .login-header {
@@ -67,7 +68,7 @@
         }
 
         .login-header h1 i {
-            color: #3498db;
+            color: #667eea;
             font-size: 1.5rem;
         }
 
@@ -102,13 +103,13 @@
         }
 
         .form-control:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
             transform: translateY(-2px);
         }
 
         .form-control:hover {
-            border-color: #3498db;
+            border-color: #667eea;
         }
 
         .password-input-container {
@@ -141,14 +142,14 @@
         }
 
         .password-toggle:hover {
-            color: #3498db;
-            background-color: rgba(52, 152, 219, 0.1);
+            color: #667eea;
+            background-color: rgba(102, 126, 234, 0.1);
         }
 
         .password-toggle:focus {
             outline: none;
-            color: #3498db;
-            background-color: rgba(52, 152, 219, 0.1);
+            color: #667eea;
+            background-color: rgba(102, 126, 234, 0.1);
         }
 
         .password-toggle i {
@@ -158,7 +159,7 @@
         .btn-login {
             width: 100%;
             padding: 15px 20px;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 12px;
@@ -191,7 +192,7 @@
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
 
         .btn-login:active {

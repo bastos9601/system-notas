@@ -28,7 +28,7 @@
         .sidebar {
             width: 280px;
             background: #ffffff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
             border-right: 1px solid #e9ecef;
             overflow-y: hidden;
             height: 100vh;
@@ -82,13 +82,13 @@
         .nav-item:hover {
             background: rgba(52, 152, 219, 0.1);
             color: #3498db;
-            border-left-color: #3498db;
+            border-left-color: #2c3e50;
         }
 
         .nav-item.active {
             background: rgba(52, 152, 219, 0.2);
             color: #3498db;
-            border-left-color: #3498db;
+            border-left-color: #2c3e50;
         }
 
         .nav-item i {
@@ -167,6 +167,8 @@
             border-radius: 8px;
             padding: 12px 15px;
             font-size: 1rem;
+            width: 100%;
+            max-width: 500px;
             transition: all 0.3s ease;
             background: #ffffff;
         }
@@ -175,6 +177,51 @@
             border-color: #3498db;
             box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
             outline: none;
+        }
+
+        .password-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            max-width: 500px;
+        }
+
+        .password-input-container .form-control {
+            padding-right: 50px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+
+        .password-toggle:hover {
+            color: #3498db;
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .password-toggle:focus {
+            outline: none;
+            color: #3498db;
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .password-toggle i {
+            font-size: 16px;
         }
 
         .form-text {
@@ -211,7 +258,7 @@
 
         .btn-primary {
             background: #3498db;
-            color: #ffffff;
+            color: #2c3e50;
         }
 
         .btn-primary:hover {
@@ -222,7 +269,7 @@
 
         .btn-secondary {
             background: #6c757d;
-            color: #ffffff;
+            color: #2c3e50;
         }
 
         .btn-secondary:hover {
@@ -388,7 +435,12 @@
 
                     <div class="form-group">
                         <label for="password" class="form-label">Contraseña *</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="password-input-container">
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <button type="button" class="password-toggle" id="passwordToggle">
+                                <i class="fas fa-eye" id="passwordIcon"></i>
+                            </button>
+                        </div>
                         <small class="form-text">
                             La contraseña será encriptada y almacenada de forma segura.
                         </small>
@@ -396,7 +448,12 @@
 
                     <div class="form-group">
                         <label for="confirm_password" class="form-label">Confirmar Contraseña *</label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        <div class="password-input-container">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <button type="button" class="password-toggle" id="confirmPasswordToggle">
+                                <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="alert alert-info">
@@ -470,6 +527,36 @@
             
             password.addEventListener('change', validatePassword);
             confirmPassword.addEventListener('keyup', validatePassword);
+
+            // Funcionalidad para mostrar/ocultar contraseña
+            const passwordToggle = document.getElementById('passwordToggle');
+            const passwordIcon = document.getElementById('passwordIcon');
+            const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+            const confirmPasswordIcon = document.getElementById('confirmPasswordIcon');
+
+            passwordToggle.addEventListener('click', function() {
+                if (password.type === 'password') {
+                    password.type = 'text';
+                    passwordIcon.classList.remove('fa-eye');
+                    passwordIcon.classList.add('fa-eye-slash');
+                } else {
+                    password.type = 'password';
+                    passwordIcon.classList.remove('fa-eye-slash');
+                    passwordIcon.classList.add('fa-eye');
+                }
+            });
+
+            confirmPasswordToggle.addEventListener('click', function() {
+                if (confirmPassword.type === 'password') {
+                    confirmPassword.type = 'text';
+                    confirmPasswordIcon.classList.remove('fa-eye');
+                    confirmPasswordIcon.classList.add('fa-eye-slash');
+                } else {
+                    confirmPassword.type = 'password';
+                    confirmPasswordIcon.classList.remove('fa-eye-slash');
+                    confirmPasswordIcon.classList.add('fa-eye');
+                }
+            });
         });
     </script>
 </body>

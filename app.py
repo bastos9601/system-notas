@@ -1167,18 +1167,9 @@ def alumno_mi_perfil():
     
     if request.method == 'POST':
         try:
-            # Actualizar información del alumno
-            alumno.nombre = request.form['nombre']
-            alumno.apellido = request.form['apellido']
+            # Solo actualizar campos editables por el alumno
             alumno.email = request.form.get('email')
             alumno.telefono = request.form.get('telefono')
-            fecha_nacimiento = request.form.get('fecha_nacimiento')
-            alumno.ciclo = request.form['ciclo']
-            
-            if fecha_nacimiento:
-                alumno.fecha_nacimiento = datetime.strptime(fecha_nacimiento, '%Y-%m-%d').date()
-            else:
-                alumno.fecha_nacimiento = None
             
             # Actualizar información del usuario
             usuario = Usuario.query.get(usuario_id)

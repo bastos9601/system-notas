@@ -30,7 +30,7 @@
         .sidebar {
             width: 280px;
             background: #ffffff;
-            color: #333;
+            color: #2c3e50;
             padding: 0;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             overflow-y: auto;
@@ -65,7 +65,7 @@
             display: flex;
             align-items: center;
             padding: 15px 25px;
-            color: #666;
+            color: #6c757d;
             text-decoration: none;
             transition: all 0.3s ease;
             border-left: 3px solid transparent;
@@ -73,14 +73,14 @@
 
         .nav-item:hover {
             background: #f8f9fa;
-            color: #3498db;
+            color: #2c3e50;
             border-left-color: #3498db;
         }
 
         .nav-item.active {
-            background: #e3f2fd;
+            background: rgba(52, 152, 219, 0.2);
             color: #1976d2;
-            border-left-color: #1976d2;
+            border-left-color: #3498db;
             font-weight: 600;
         }
 
@@ -144,12 +144,30 @@
         }
 
         .alumno-info {
-            background: white;
+            background: #ffffff;
             border-radius: 16px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             border: 1px solid #e9ecef;
             margin-bottom: 30px;
+        }
+
+        .alumno-info h2 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .alumno-info p {
+            color: #6c757d;
+            margin: 5px 0;
+            font-size: 0.95rem;
+        }
+
+        .alumno-info strong {
+            color: #2c3e50;
+            font-weight: 600;
         }
 
         .alumno-header {
@@ -173,14 +191,14 @@
         }
 
         .alumno-details h2 {
-            color: #2c3e50;
+            color: #ffffff;
             font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 5px;
         }
 
         .alumno-meta {
-            color: #6c757d;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 1rem;
         }
 
@@ -210,7 +228,7 @@
         }
 
         .form-container {
-            background: white;
+            background: #ffffff;
             border-radius: 16px;
             padding: 40px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -278,6 +296,7 @@
             transition: all 0.3s ease;
             background: #ffffff;
             outline: none;
+            color: #2c3e50;
         }
 
         .form-control:focus {

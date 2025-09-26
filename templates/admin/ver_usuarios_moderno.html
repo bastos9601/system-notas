@@ -164,7 +164,7 @@
                                 <i class="fas fa-edit"></i>
                             </a>
                             {% if usuario.id != session.user_id %}
-                            <button onclick="eliminarUsuario({{ usuario.id }}, '{{ usuario.username }}')" class="btn-action delete" title="Eliminar usuario">
+                            <button data-user-id="{{ usuario.id }}" data-username="{{ usuario.username }}" class="btn-action delete" title="Eliminar usuario">
                                 <i class="fas fa-trash"></i>
                             </button>
                             {% else %}
@@ -214,8 +214,8 @@ html, body {
 /* Sidebar */
 .sidebar {
     width: 280px;
-    background: white;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    background: #ffffff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -229,25 +229,25 @@ html, body {
 
 .sidebar-header h2 {
     margin: 0;
-    color: #333;
+    color: #2c3e50;
     font-size: 1.5rem;
     font-weight: 600;
 }
 
 .user-info {
     padding: 20px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .user-name {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 5px;
 }
 
 .user-role {
-    color: #dc3545;
+    color: #ff6b6b;
     font-size: 0.9rem;
     font-weight: 500;
 }
@@ -261,7 +261,7 @@ html, body {
     display: flex;
     align-items: center;
     padding: 12px 20px;
-    color: #666;
+    color: #6c757d;
     text-decoration: none;
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
@@ -269,12 +269,13 @@ html, body {
 
 .nav-item:hover {
     background-color: #f8f9fa;
-    color: #333;
+    color: #2c3e50;
 }
 
 .nav-item.active {
     background: rgba(52, 152, 219, 0.2);
     border-left-color: #3498db;
+    color: #1976d2;
 }
 
 .nav-item i {
@@ -289,12 +290,12 @@ html, body {
 }
 
 .nav-item.logout {
-    color: #dc3545;
+    color: #e74c3c;
 }
 
 .nav-item.logout:hover {
     background-color: #f8d7da;
-    color: #721c24;
+    color: #c0392b;
 }
 
 /* Main Content */
@@ -724,6 +725,18 @@ function eliminarUsuario(id, username) {
         form.submit();
     }
 }
+
+// Event listener para los botones de eliminar
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.btn-action.delete:not(.disabled)');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const username = this.getAttribute('data-username');
+            eliminarUsuario(userId, username);
+        });
+    });
+});
 </script>
 </body>
 </html>

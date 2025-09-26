@@ -90,6 +90,19 @@
             </div>
         </div>
 
+        <!-- Buscador -->
+        <div class="search-card">
+            <div class="card-header">
+                <h3><i class="fas fa-search"></i> Buscar Notas</h3>
+            </div>
+            <div class="card-body">
+                <div class="search-container">
+                    <input type="text" id="searchNota" placeholder="Buscar por alumno, materia o docente..." class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+        </div>
+
         <!-- Filtros -->
         <div class="filters-card">
             <div class="card-header">
@@ -119,28 +132,22 @@
                         <label for="filterTipo">Tipo de Evaluación:</label>
                         <select id="filterTipo" class="filter-select">
                             <option value="">Todos los tipos</option>
-                            <option value="Parcial">Parcial</option>
-                            <option value="Final">Final</option>
-                            <option value="Trabajo">Trabajo</option>
-                            <option value="Proyecto">Proyecto</option>
+                            <option value="parcial">Parcial</option>
+                            <option value="final">Final</option>
+                            <option value="trabajo">Trabajo</option>
+                            <option value="proyecto">Proyecto</option>
+                            <option value="examen">Examen</option>
                         </select>
                     </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="button" id="clearFilters" class="btn-clear-filters">
+                        <i class="fas fa-times"></i> Limpiar Filtros
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Buscador -->
-        <div class="search-card">
-            <div class="card-header">
-                <h3><i class="fas fa-search"></i> Buscar Notas</h3>
-            </div>
-            <div class="card-body">
-                <div class="search-container">
-                    <input type="text" id="searchNota" placeholder="Buscar por alumno, materia o docente..." class="search-input">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-            </div>
-        </div>
 
         <!-- Lista de Notas -->
         <div class="notas-card">
@@ -221,10 +228,7 @@
                                 </td>
                                 <td>
                                     <div class="nota-actions">
-                                        <a href="{{ url_for('editar_nota', nota_id=nota.id) }}" class="btn-action edit" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button onclick="eliminarNota({{ nota.id }}, '{{ nota.alumno.nombre }} {{ nota.alumno.apellido }}')" class="btn-action delete" title="Eliminar">
+                                        <button data-nota-id="{{ nota.id }}" data-alumno-nombre="{{ nota.alumno.nombre }} {{ nota.alumno.apellido }}" class="btn-action delete" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -269,7 +273,7 @@ html, body {
 /* Sidebar */
 .sidebar {
     width: 280px;
-    background: white;
+    background: #ffffff;
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
@@ -284,7 +288,7 @@ html, body {
 
 .sidebar-header h2 {
     margin: 0;
-    color: #333;
+    color: #2c3e50;
     font-size: 1.5rem;
     font-weight: 600;
 }
@@ -297,12 +301,12 @@ html, body {
 .user-name {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: #2c3e50;
     margin-bottom: 5px;
 }
 
 .user-role {
-    color: #dc3545;
+    color: #e74c3c;
     font-size: 0.9rem;
     font-weight: 500;
 }
@@ -316,7 +320,7 @@ html, body {
     display: flex;
     align-items: center;
     padding: 12px 20px;
-    color: #666;
+    color: #6c757d;
     text-decoration: none;
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
@@ -324,12 +328,12 @@ html, body {
 
 .nav-item:hover {
     background-color: #f8f9fa;
-    color: #333;
+    color: #2c3e50;
 }
 
 .nav-item.active {
-    background: rgba(52, 152, 219, 0.2);
-    border-left-color: #3498db;
+    background-color: #e3f2fd;
+    border-left-color: #2c3e50;
 }
 
 .nav-item i {
@@ -344,12 +348,12 @@ html, body {
 }
 
 .nav-item.logout {
-    color: #dc3545;
+    color: #e74c3c;
 }
 
 .nav-item.logout:hover {
     background-color: #f8d7da;
-    color: #721c24;
+    color: #c0392b;
 }
 
 /* Main Content */
@@ -367,14 +371,14 @@ html, body {
 
 .content-header h1 {
     margin: 0 0 10px 0;
-    color: #333;
+    color: #2c3e50;
     font-size: 2rem;
     font-weight: 600;
 }
 
 .content-header p {
     margin: 0;
-    color: #666;
+    color: #6c757d;
     font-size: 1.1rem;
 }
 
@@ -387,7 +391,7 @@ html, body {
 }
 
 .stat-card {
-    background: white;
+    background: #ffffff;
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -396,10 +400,10 @@ html, body {
     border-left: 4px solid;
 }
 
-.stat-card.primary { border-left-color: #1976d2; }
+.stat-card.primary { border-left-color: #2c3e50; }
 .stat-card.success { border-left-color: #28a745; }
 .stat-card.warning { border-left-color: #ffc107; }
-.stat-card.danger { border-left-color: #dc3545; }
+.stat-card.danger { border-left-color: #e74c3c; }
 
 .stat-icon {
     margin-right: 15px;
@@ -409,24 +413,24 @@ html, body {
 .stat-card.primary .stat-icon { color: #1976d2; }
 .stat-card.success .stat-icon { color: #28a745; }
 .stat-card.warning .stat-icon { color: #ffc107; }
-.stat-card.danger .stat-icon { color: #dc3545; }
+.stat-card.danger .stat-icon { color: #e74c3c; }
 
 .stat-number {
     font-size: 2rem;
     font-weight: 700;
-    color: #333;
+    color: #2c3e50;
     line-height: 1;
 }
 
 .stat-label {
-    color: #666;
+    color: #6c757d;
     font-size: 0.9rem;
     margin-top: 5px;
 }
 
 /* Cards */
 .filters-card, .search-card, .notas-card {
-    background: white;
+    background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     margin-bottom: 30px;
@@ -441,7 +445,7 @@ html, body {
 
 .card-header h3 {
     margin: 0;
-    color: #333;
+    color: #2c3e50;
     font-size: 1.2rem;
     font-weight: 600;
 }
@@ -470,7 +474,7 @@ html, body {
 .filter-group label {
     margin-bottom: 8px;
     font-weight: 600;
-    color: #333;
+    color: #2c3e50;
 }
 
 .filter-select {
@@ -485,6 +489,30 @@ html, body {
     outline: none;
     border-color: #1976d2;
     box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.filter-actions {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.btn-clear-filters {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-clear-filters:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
 }
 
 /* Search */
@@ -512,7 +540,7 @@ html, body {
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: #666;
+    color: #6c757d;
 }
 
 /* Table */
@@ -523,7 +551,7 @@ html, body {
 .notas-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -534,7 +562,7 @@ html, body {
     padding: 15px;
     text-align: left;
     font-weight: 600;
-    color: #333;
+    color: #2c3e50;
     border-bottom: 2px solid #e9ecef;
 }
 
@@ -573,12 +601,12 @@ html, body {
 }
 
 .alumno-details strong, .materia-info strong {
-    color: #333;
+    color: #2c3e50;
     font-size: 0.9rem;
 }
 
 .alumno-details small, .materia-info small {
-    color: #666;
+    color: #6c757d;
     font-size: 0.8rem;
 }
 
@@ -600,7 +628,7 @@ html, body {
 .tipo-badge.final { background: #fff3e0; color: #f57c00; }
 .tipo-badge.trabajo { background: #e8f5e8; color: #2e7d32; }
 .tipo-badge.proyecto { background: #fce4ec; color: #c2185b; }
-.tipo-badge.sin-tipo { background: #f5f5f5; color: #666; }
+.tipo-badge.sin-tipo { background: #f5f5f5; color: #6c757d; }
 
 .nota-value {
     font-size: 1.2rem;
@@ -611,7 +639,7 @@ html, body {
 
 .nota-value.aprobada { background: #d4edda; color: #155724; }
 .nota-value.recuperacion { background: #fff3cd; color: #856404; }
-.nota-value.desaprobada { background: #f8d7da; color: #721c24; }
+.nota-value.desaprobada { background: #f8d7da; color: #c0392b; }
 
 .estado-badge {
     display: inline-flex;
@@ -625,10 +653,10 @@ html, body {
 
 .estado-badge.aprobada { background: #d4edda; color: #155724; }
 .estado-badge.recuperacion { background: #fff3cd; color: #856404; }
-.estado-badge.desaprobada { background: #f8d7da; color: #721c24; }
+.estado-badge.desaprobada { background: #f8d7da; color: #c0392b; }
 
 .fecha {
-    color: #666;
+    color: #6c757d;
     font-size: 0.9rem;
 }
 
@@ -675,7 +703,7 @@ html, body {
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #666;
+    color: #6c757d;
 }
 
 .empty-state i {
@@ -686,7 +714,7 @@ html, body {
 
 .empty-state h3 {
     margin: 0 0 10px 0;
-    color: #333;
+    color: #2c3e50;
 }
 
 .empty-state p {
@@ -729,57 +757,138 @@ html, body {
 
 <script>
 // Función de búsqueda
-document.getElementById('searchNota').addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
-    const notaRows = document.querySelectorAll('.nota-row');
+function searchNotas() {
+    const searchTerm = document.getElementById('searchNota').value.toLowerCase();
+    console.log('Búsqueda:', searchTerm);
     
-    notaRows.forEach(row => {
-        const alumnoNombre = row.dataset.alumnoNombre;
-        const materiaNombre = row.dataset.materiaNombre;
-        const docenteNombre = row.dataset.docenteNombre;
-        
-        if (alumnoNombre.includes(searchTerm) || materiaNombre.includes(searchTerm) || docenteNombre.includes(searchTerm)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-});
+    // Aplicar tanto búsqueda como filtros
+    applyAllFilters();
+}
 
-// Función de filtros
-document.getElementById('filterMateria').addEventListener('change', function() {
-    filterTable();
-});
-
-document.getElementById('filterAlumno').addEventListener('change', function() {
-    filterTable();
-});
-
-document.getElementById('filterTipo').addEventListener('change', function() {
-    filterTable();
-});
-
-function filterTable() {
+// Función que aplica tanto búsqueda como filtros
+function applyAllFilters() {
+    const searchTerm = document.getElementById('searchNota').value.toLowerCase();
     const materiaFilter = document.getElementById('filterMateria').value;
     const alumnoFilter = document.getElementById('filterAlumno').value;
     const tipoFilter = document.getElementById('filterTipo').value.toLowerCase();
     
-    const notaRows = document.querySelectorAll('.nota-row');
+    console.log('Aplicando todos los filtros:', {
+        search: searchTerm,
+        materia: materiaFilter,
+        alumno: alumnoFilter,
+        tipo: tipoFilter
+    });
     
-    notaRows.forEach(row => {
+    const notaRows = document.querySelectorAll('.nota-row');
+    let visibleCount = 0;
+    
+    notaRows.forEach((row, index) => {
         const materiaId = row.dataset.materia;
         const alumnoId = row.dataset.alumno;
         const tipo = row.dataset.tipo;
+        const alumnoNombre = row.dataset.alumnoNombre;
+        const materiaNombre = row.dataset.materiaNombre;
+        const docenteNombre = row.dataset.docenteNombre;
         
         let show = true;
         
-        if (materiaFilter && materiaId !== materiaFilter) show = false;
-        if (alumnoFilter && alumnoId !== alumnoFilter) show = false;
-        if (tipoFilter && tipo !== tipoFilter) show = false;
+        // Filtro por búsqueda de texto
+        if (searchTerm) {
+            const matchesSearch = alumnoNombre.includes(searchTerm) || 
+                                materiaNombre.includes(searchTerm) || 
+                                docenteNombre.includes(searchTerm);
+            if (!matchesSearch) {
+                show = false;
+            }
+        }
+        
+        // Filtro por materia
+        if (materiaFilter && materiaId !== materiaFilter) {
+            show = false;
+        }
+        
+        // Filtro por alumno
+        if (alumnoFilter && alumnoId !== alumnoFilter) {
+            show = false;
+        }
+        
+        // Filtro por tipo de evaluación
+        if (tipoFilter && tipo !== tipoFilter) {
+            show = false;
+        }
         
         row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
     });
+    
+    console.log('Filas visibles después de aplicar todos los filtros:', visibleCount);
+    
+    // Actualizar contador de resultados
+    const counterElement = document.querySelector('.notas-card .card-header h3');
+    if (counterElement) {
+        const totalNotas = document.querySelectorAll('.nota-row').length;
+        counterElement.innerHTML = `<i class="fas fa-list"></i> Lista de Notas (${visibleCount} de ${totalNotas} registradas)`;
+    }
 }
+
+// Función de filtros
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM cargado, configurando filtros...');
+    
+    const filterMateria = document.getElementById('filterMateria');
+    const filterAlumno = document.getElementById('filterAlumno');
+    const filterTipo = document.getElementById('filterTipo');
+    const clearFilters = document.getElementById('clearFilters');
+    
+    // Event listener para búsqueda
+    const searchInput = document.getElementById('searchNota');
+    if (searchInput) {
+        searchInput.addEventListener('input', searchNotas);
+    }
+    
+    if (filterMateria) {
+        filterMateria.addEventListener('change', function() {
+            console.log('Filtro materia cambiado:', this.value);
+            applyAllFilters();
+        });
+    }
+    
+    if (filterAlumno) {
+        filterAlumno.addEventListener('change', function() {
+            console.log('Filtro alumno cambiado:', this.value);
+            applyAllFilters();
+        });
+    }
+    
+    if (filterTipo) {
+        filterTipo.addEventListener('change', function() {
+            console.log('Filtro tipo cambiado:', this.value);
+            applyAllFilters();
+        });
+    }
+    
+    if (clearFilters) {
+        clearFilters.addEventListener('click', function() {
+            console.log('Limpiando filtros...');
+            document.getElementById('filterMateria').value = '';
+            document.getElementById('filterAlumno').value = '';
+            document.getElementById('filterTipo').value = '';
+            document.getElementById('searchNota').value = '';
+            applyAllFilters();
+        });
+    }
+    
+    // Event listeners para botones de eliminar
+    const deleteButtons = document.querySelectorAll('.btn-action.delete');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const notaId = this.getAttribute('data-nota-id');
+            const alumnoNombre = this.getAttribute('data-alumno-nombre');
+            eliminarNota(notaId, alumnoNombre);
+        });
+    });
+});
+
 
 // Función para eliminar nota
 function eliminarNota(id, alumno) {
