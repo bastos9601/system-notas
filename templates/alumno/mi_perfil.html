@@ -114,6 +114,22 @@
             <form method="POST">
                 <div class="form-row">
                     <div class="form-group">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" 
+                               value="{{ alumno.nombre }}" 
+                               placeholder="Ingresa tu nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apellido" class="form-label">Apellido</label>
+                        <input type="text" id="apellido" name="apellido" class="form-control" 
+                               value="{{ alumno.apellido }}" 
+                               placeholder="Ingresa tu apellido" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" id="email" name="email" class="form-control" 
                                value="{{ alumno.email or '' }}" 
@@ -125,6 +141,27 @@
                         <input type="text" id="telefono" name="telefono" class="form-control" 
                                value="{{ alumno.telefono or '' }}" 
                                placeholder="Ingresa tu teléfono">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ciclo" class="form-label">Ciclo</label>
+                        <select id="ciclo" name="ciclo" class="form-control" required>
+                            <option value="">Selecciona tu ciclo</option>
+                            <option value="primero" {% if alumno.ciclo == 'primero' %}selected{% endif %}>Primer Ciclo</option>
+                            <option value="segundo" {% if alumno.ciclo == 'segundo' %}selected{% endif %}>Segundo Ciclo</option>
+                            <option value="tercero" {% if alumno.ciclo == 'tercero' %}selected{% endif %}>Tercer Ciclo</option>
+                            <option value="cuarto" {% if alumno.ciclo == 'cuarto' %}selected{% endif %}>Cuarto Ciclo</option>
+                            <option value="quinto" {% if alumno.ciclo == 'quinto' %}selected{% endif %}>Quinto Ciclo</option>
+                            <option value="sexto" {% if alumno.ciclo == 'sexto' %}selected{% endif %}>Sexto Ciclo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" 
+                               value="{{ alumno.fecha_nacimiento.strftime('%Y-%m-%d') if alumno.fecha_nacimiento else '' }}">
                     </div>
                 </div>
                 
@@ -493,6 +530,31 @@ body {
     border-color: #3498db;
 }
 
+/* Estilos específicos para select y date */
+select.form-control {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+    appearance: none;
+}
+
+input[type="date"].form-control {
+    cursor: pointer;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
 .btn {
     padding: 15px 30px;
     border: none;
@@ -609,6 +671,69 @@ document.addEventListener('DOMContentLoaded', function() {
                 passwordIcon.classList.add('fa-eye');
             }
         });
+    }
+
+    // Validación del formulario
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const nombre = document.getElementById('nombre').value.trim();
+            const apellido = document.getElementById('apellido').value.trim();
+            const ciclo = document.getElementById('ciclo').value;
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Validar campos requeridos
+            if (!nombre) {
+                e.preventDefault();
+                alert('Por favor, ingresa tu nombre');
+                document.getElementById('nombre').focus();
+                return;
+            }
+
+            if (!apellido) {
+                e.preventDefault();
+                alert('Por favor, ingresa tu apellido');
+                document.getElementById('apellido').focus();
+                return;
+            }
+
+            if (!ciclo) {
+                e.preventDefault();
+                alert('Por favor, selecciona tu ciclo');
+                document.getElementById('ciclo').focus();
+                return;
+            }
+
+            // Validar email si se proporciona
+            if (email && !isValidEmail(email)) {
+                e.preventDefault();
+                alert('Por favor, ingresa un email válido');
+                document.getElementById('email').focus();
+                return;
+            }
+
+            // Validar contraseña si se proporciona
+            if (password && password.length < 4) {
+                e.preventDefault();
+                alert('La contraseña debe tener al menos 4 caracteres');
+                document.getElementById('password').focus();
+                return;
+            }
+
+            // Mostrar mensaje de confirmación
+            if (confirm('¿Estás seguro de que quieres guardar los cambios?')) {
+                // El formulario se enviará normalmente
+            } else {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Función para validar email
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 });
 </script>
