@@ -1263,7 +1263,7 @@ def admin_mi_perfil():
                     return redirect(url_for('admin_mi_perfil'))
                 usuario.password_hash = generate_password_hash(nueva_password)
             
-        db.session.commit()
+            db.session.commit()
             flash('Perfil actualizado exitosamente', 'success')
             return redirect(url_for('admin_mi_perfil'))
         except Exception as e:
