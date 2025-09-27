@@ -281,6 +281,53 @@ def crear_usuario_alumno():
     alumnos_sin_usuario = Alumno.query.filter_by(usuario_id=None).all()
     return render_template('admin/crear_usuario_alumno_moderno.html', alumnos=alumnos_sin_usuario)
 
+@app.route('/admin/crear_docente', methods=['GET', 'POST'])
+def crear_docente():
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        telefono = request.form.get('telefono')
+        
+        try:
+            # Verificar que el username y email no existan
+            if Usuario.query.filter_by(username=username).first():
+                flash('El nombre de usuario ya existe', 'error')
+            elif Usuario.query.filter_by(email=email).first():
+                flash('El email ya está registrado', 'error')
+            else:
+                # Crear el usuario docente
+                usuario = Usuario(
+                    username=username,
+                    email=email,
+                    password_hash=generate_password_hash(password),
+                    tipo='docente',
+                    nombre=nombre,
+                    apellido=apellido,
+                    telefono=telefono
+                )
+                
+                db.session.add(usuario)
+                db.session.commit()
+                flash('Docente creado exitosamente', 'success')
+                return redirect(url_for('admin_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            if 'UNIQUE constraint failed: usuario.email' in str(e):
+                flash('El email ya está registrado', 'error')
+            elif 'UNIQUE constraint failed: usuario.username' in str(e):
+                flash('El nombre de usuario ya existe', 'error')
+            else:
+                flash('Error al crear el docente. Inténtalo de nuevo.', 'error')
+                print(f"Error al crear docente: {e}")
+    
+    return render_template('admin/crear_docente_moderno.html')
+
 @app.route('/admin/ver_notas')
 def admin_ver_notas():
     if not session.get('user_id') or session.get('tipo') != 'admin':
