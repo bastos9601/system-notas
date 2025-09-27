@@ -334,7 +334,7 @@ def admin_ver_notas():
         return redirect(url_for('login'))
     
     try:
-        # Obtener todas las notas con información de alumno y materia
+    # Obtener todas las notas con información de alumno y materia
         notas_query = db.session.query(Nota, Alumno, Materia, Usuario).select_from(Nota).outerjoin(Alumno, Nota.alumno_id == Alumno.id).outerjoin(Materia, Nota.materia_id == Materia.id).outerjoin(Usuario, Materia.docente_id == Usuario.id).order_by(Nota.fecha.desc()).all()
         
         # Crear una lista con objetos nota que tengan las relaciones cargadas
@@ -1226,7 +1226,7 @@ def alumno_mi_perfil():
                 if nueva_password and nueva_password.strip():
                     usuario.password_hash = generate_password_hash(nueva_password)
             
-            db.session.commit()
+                db.session.commit()
             flash('Perfil actualizado exitosamente', 'success')
             return redirect(url_for('alumno_mi_perfil'))
         except Exception as e:
@@ -1263,7 +1263,7 @@ def admin_mi_perfil():
                     return redirect(url_for('admin_mi_perfil'))
                 usuario.password_hash = generate_password_hash(nueva_password)
             
-            db.session.commit()
+        db.session.commit()
             flash('Perfil actualizado exitosamente', 'success')
             return redirect(url_for('admin_mi_perfil'))
         except Exception as e:
