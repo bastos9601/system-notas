@@ -1,47 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - Sistema de Notas</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="admin-dashboard">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2><i class="fas fa-user-shield"></i> Administrador</h2>
-            <p>{{ session.nombre if session.nombre else 'Admin' }}</p>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="{{ url_for('admin_ver_usuarios') }}" class="nav-item">
-                <i class="fas fa-users"></i> Usuarios
-            </a>
-            <a href="{{ url_for('admin_ver_alumnos') }}" class="nav-item">
-                <i class="fas fa-user-graduate"></i> Alumnos
-            </a>
-            <a href="{{ url_for('admin_ver_materias') }}" class="nav-item">
-                <i class="fas fa-book"></i> Materias
-            </a>
-            <a href="{{ url_for('admin_ver_notas') }}" class="nav-item">
-                <i class="fas fa-clipboard-list"></i> Notas
-            </a>
-            <a href="{{ url_for('admin_mi_perfil') }}" class="nav-item active">
-                <i class="fas fa-user-cog"></i> Mi Perfil
-            </a>
-            <a href="{{ url_for('logout') }}" class="nav-item">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </a>
-        </nav>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="main-content">
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Mi Perfil - Sistema de Notas{% endblock %}
+
+{% block content %}
         <div class="content-header">
             <h1>Mi Perfil</h1>
             <p>Gestiona tu información personal y configuración de cuenta de administrador</p>
@@ -146,139 +107,10 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_css %}
 <style>
-/* Reset para ocupar toda la pantalla - v2.0 */
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-}
-
-/* Estilos para el dashboard del administrador */
-.admin-dashboard {
-    display: flex;
-    min-height: 100vh;
-    height: 100vh;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 280px;
-    background: #ffffff;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    box-sizing: border-box;
-}
-
-.sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.sidebar-header h2 {
-    margin: 0;
-    color: #2c3e50;
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.user-info {
-    padding: 20px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.user-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 5px;
-}
-
-.user-role {
-    color: #e74c3c;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.sidebar-nav {
-    flex: 1;
-    padding: 20px 0;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    color: #6c757d;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border-left: 3px solid transparent;
-}
-
-.nav-item:hover {
-    background-color: #f8f9fa;
-    color: #2c3e50;
-}
-
-.nav-item.active {
-    background-color: #e3f2fd;
-    border-left-color: #2c3e50;
-}
-
-.nav-item i {
-    margin-right: 12px;
-    width: 20px;
-    text-align: center;
-}
-
-.sidebar-footer {
-    padding: 20px 0;
-    border-top: 1px solid #e9ecef;
-}
-
-.nav-item.logout {
-    color: #e74c3c;
-}
-
-.nav-item.logout:hover {
-    background-color: #f8d7da;
-    color: #c0392b;
-}
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-    height: 100vh;
-    box-sizing: border-box;
-}
-
-.content-header {
-    margin-bottom: 30px;
-}
-
-.content-header h1 {
-    margin: 0 0 10px 0;
-    color: #2c3e50;
-    font-size: 2rem;
-    font-weight: 600;
-}
-
-.content-header p {
-    margin: 0;
-    color: #6c757d;
-    font-size: 1.1rem;
-}
-
 /* Cards */
 .profile-card, .account-info-card, .system-config-card {
     background: #ffffff;
@@ -471,19 +303,6 @@ html, body {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .admin-dashboard {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        height: auto;
-    }
-    
-    .main-content {
-        padding: 20px;
-    }
-    
     .form-grid {
         grid-template-columns: 1fr;
     }
@@ -497,47 +316,49 @@ html, body {
     }
 }
 </style>
-    <script>
-        // Funcionalidad para mostrar/ocultar contraseña
-        document.addEventListener('DOMContentLoaded', function() {
-            // Toggle para nueva contraseña
-            const passwordToggle = document.getElementById('passwordToggle');
-            const passwordInput = document.getElementById('password');
-            const passwordIcon = document.getElementById('passwordIcon');
+{% endblock %}
 
-            if (passwordToggle) {
-                passwordToggle.addEventListener('click', function() {
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        passwordIcon.classList.remove('fa-eye');
-                        passwordIcon.classList.add('fa-eye-slash');
-                    } else {
-                        passwordInput.type = 'password';
-                        passwordIcon.classList.remove('fa-eye-slash');
-                        passwordIcon.classList.add('fa-eye');
-                    }
-                });
-            }
+{% block extra_js %}
+<script>
+    // Funcionalidad para mostrar/ocultar contraseña
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle para nueva contraseña
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordInput = document.getElementById('password');
+        const passwordIcon = document.getElementById('passwordIcon');
 
-            // Toggle para confirmar contraseña
-            const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
-            const confirmPasswordInput = document.getElementById('confirm_password');
-            const confirmPasswordIcon = document.getElementById('confirmPasswordIcon');
+        if (passwordToggle) {
+            passwordToggle.addEventListener('click', function() {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    passwordIcon.classList.remove('fa-eye');
+                    passwordIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    passwordIcon.classList.remove('fa-eye-slash');
+                    passwordIcon.classList.add('fa-eye');
+                }
+            });
+        }
 
-            if (confirmPasswordToggle) {
-                confirmPasswordToggle.addEventListener('click', function() {
-                    if (confirmPasswordInput.type === 'password') {
-                        confirmPasswordInput.type = 'text';
-                        confirmPasswordIcon.classList.remove('fa-eye');
-                        confirmPasswordIcon.classList.add('fa-eye-slash');
-                    } else {
-                        confirmPasswordInput.type = 'password';
-                        confirmPasswordIcon.classList.remove('fa-eye-slash');
-                        confirmPasswordIcon.classList.add('fa-eye');
-                    }
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+        // Toggle para confirmar contraseña
+        const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        const confirmPasswordIcon = document.getElementById('confirmPasswordIcon');
+
+        if (confirmPasswordToggle) {
+            confirmPasswordToggle.addEventListener('click', function() {
+                if (confirmPasswordInput.type === 'password') {
+                    confirmPasswordInput.type = 'text';
+                    confirmPasswordIcon.classList.remove('fa-eye');
+                    confirmPasswordIcon.classList.add('fa-eye-slash');
+                } else {
+                    confirmPasswordInput.type = 'password';
+                    confirmPasswordIcon.classList.remove('fa-eye-slash');
+                    confirmPasswordIcon.classList.add('fa-eye');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

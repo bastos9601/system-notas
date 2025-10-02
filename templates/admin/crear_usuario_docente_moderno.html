@@ -1,11 +1,11 @@
 {% extends "admin/base_admin.html" %}
 
-{% block title %}Crear Usuario para Alumno - Sistema de Notas{% endblock %}
+{% block title %}Crear Usuario para Docente - Sistema de Notas{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="fas fa-user-plus"></i> Crear Usuario para Alumno</h1>
-    <p>Asocia un usuario a un alumno existente para que pueda acceder al sistema</p>
+    <h1><i class="fas fa-user-plus"></i> Crear Usuario para Docente</h1>
+    <p>Asocia un usuario a un docente existente para que pueda acceder al sistema</p>
 </div>
 
 <div class="content-container">
@@ -15,19 +15,19 @@
             <h3>Información del Usuario</h3>
         </div>
 
-        <form method="POST" action="{{ url_for('crear_usuario_alumno') }}">
+        <form method="POST" action="{{ url_for('crear_usuario_docente') }}">
             <div class="form-group">
-                <label for="alumno_id" class="form-label">Seleccionar Alumno *</label>
-                <select class="form-control" id="alumno_id" name="alumno_id" required>
-                    <option value="">-- Seleccionar Alumno --</option>
-                    {% for alumno in alumnos %}
-                    <option value="{{ alumno.id }}">
-                        {{ alumno.nombre }} {{ alumno.apellido }} - DNI: {{ alumno.dni }} - Ciclo: {{ alumno.ciclo.title() }}
+                <label for="docente_id" class="form-label">Seleccionar Docente *</label>
+                <select class="form-control" id="docente_id" name="docente_id" required>
+                    <option value="">-- Seleccionar Docente --</option>
+                    {% for docente in docentes %}
+                    <option value="{{ docente.id }}">
+                        {{ docente.nombre }} {{ docente.apellido }} - DNI: {{ docente.dni }} - {{ docente.especialidad or 'Sin especialidad' }}
                     </option>
                     {% endfor %}
                 </select>
                 <small class="form-text">
-                    Solo se muestran alumnos que no tienen usuario asociado.
+                    Solo se muestran docentes que no tienen usuario asociado.
                 </small>
             </div>
 
@@ -64,7 +64,7 @@
 
             <div class="alert alert-info">
                 <i class="fas fa-info-circle"></i>
-                <strong>Información:</strong> Al crear este usuario, el alumno podrá acceder al sistema con sus credenciales y ver sus notas en el panel de alumno.
+                <strong>Información:</strong> Al crear este usuario, el docente podrá acceder al sistema con sus credenciales y gestionar sus materias y notas en el panel de docente.
             </div>
 
             <div class="form-actions">
@@ -81,33 +81,33 @@
     <div class="info-section">
         <div class="section-header">
             <i class="fas fa-info-circle"></i>
-            <h3>Alumnos Disponibles</h3>
+            <h3>Docentes Disponibles</h3>
         </div>
         <p class="info-text">
-            Se muestran solo los alumnos que no tienen un usuario asociado.
+            Se muestran solo los docentes que no tienen un usuario asociado.
         </p>
         
-        {% if alumnos %}
+        {% if docentes %}
         <div class="table-responsive">
             <table class="info-table">
                 <thead>
                     <tr>
-                        <th>Alumno</th>
-                        <th>Ciclo</th>
+                        <th>Docente</th>
+                        <th>Especialidad</th>
                         <th>DNI</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for alumno in alumnos %}
+                    {% for docente in docentes %}
                     <tr>
                         <td>
-                            <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong>
+                            <strong>{{ docente.nombre }} {{ docente.apellido }}</strong>
                         </td>
                         <td>
-                            <span class="badge badge-info">{{ alumno.ciclo.title() }}</span>
+                            <span class="badge badge-info">{{ docente.especialidad or 'Sin especialidad' }}</span>
                         </td>
                         <td>
-                            <span class="dni-text">{{ alumno.dni }}</span>
+                            <span class="dni-text">{{ docente.dni }}</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -117,7 +117,7 @@
         {% else %}
         <div class="alert alert-warning">
             <i class="fas fa-exclamation-triangle"></i>
-            No hay alumnos disponibles para crear usuario.
+            No hay docentes disponibles para crear usuario.
         </div>
         {% endif %}
     </div>

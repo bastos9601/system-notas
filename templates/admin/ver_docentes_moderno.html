@@ -1,0 +1,320 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Docentes - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+            <h1>Docentes del Sistema</h1>
+            <p>Gestiona todos los docentes registrados en el sistema</p>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+    <div class="stat-card users">
+        <div class="stat-icon users">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                    <div class="stat-number">{{ total_docentes }}</div>
+                    <div class="stat-label">Total Docentes</div>
+            </div>
+
+    <div class="stat-card students">
+        <div class="stat-icon students">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                    <div class="stat-number">{{ docentes_activos }}</div>
+                    <div class="stat-label">Docentes Activos</div>
+            </div>
+
+    <div class="stat-card subjects">
+        <div class="stat-icon subjects">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                    <div class="stat-number">{{ docentes_inactivos }}</div>
+                    <div class="stat-label">Docentes Inactivos</div>
+            </div>
+
+    <div class="stat-card grades">
+        <div class="stat-icon grades">
+                    <i class="fas fa-book"></i>
+                </div>
+                    <div class="stat-number">{{ docentes|sum(attribute='materias_count') }}</div>
+                    <div class="stat-label">Materias Asignadas</div>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+<div class="content-container">
+    <h2 class="section-title">
+        <i class="fas fa-bolt"></i>
+        Acciones Rápidas
+    </h2>
+                <div class="actions-grid">
+        <a href="{{ url_for('registrar_docente') }}" class="action-btn">
+                        <i class="fas fa-user-plus"></i>
+            <h3>Registrar Docente</h3>
+                        <p>Registrar nuevo docente</p>
+                    </a>
+                    
+                    <a href="{{ url_for('admin_ver_materias') }}" class="action-btn">
+                        <i class="fas fa-book"></i>
+            <h3>Ver Materias</h3>
+                        <p>Gestionar asignaciones</p>
+                    </a>
+                    
+                    <a href="{{ url_for('admin_ver_notas') }}" class="action-btn">
+                        <i class="fas fa-clipboard-list"></i>
+            <h3>Ver Notas</h3>
+                        <p>Revisar calificaciones</p>
+                    </a>
+            </div>
+        </div>
+
+        <!-- Tabla de Docentes -->
+<div class="table-container">
+            <div class="table-header">
+        <h2><i class="fas fa-list"></i> Lista de Docentes</h2>
+            </div>
+    <div class="table-responsive">
+        <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                    <th>DNI</th>
+                    <th>Nombre Completo</th>
+                            <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Especialidad</th>
+                            <th>Estado</th>
+                            <th>Materias</th>
+                            <th>Notas</th>
+                    <th>Última Actividad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for docente in docentes %}
+                <tr class="{% if docente.estado == 'inactivo' %}table-row-inactive{% endif %}">
+                            <td>{{ docente.id }}</td>
+                    <td>{{ docente.dni }}</td>
+                            <td>
+                        <strong>{{ docente.nombre }} {{ docente.apellido }}</strong>
+                            </td>
+                            <td>{{ docente.email }}</td>
+                    <td>{{ docente.telefono or 'N/A' }}</td>
+                    <td>{{ docente.especialidad or 'N/A' }}</td>
+                    <td class="text-center">
+                        {% if docente.estado == 'activo' %}
+                                <span class="status-badge status-active">
+                                <i class="fas fa-check-circle"></i> Activo
+                            </span>
+                        {% elif docente.estado == 'inactivo' %}
+                            <span class="status-badge status-inactive">
+                                <i class="fas fa-pause-circle"></i> Inactivo
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-suspended">
+                                <i class="fas fa-ban"></i> Suspendido
+                                </span>
+                        {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-info">{{ docente.materias_count }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-success">{{ docente.notas_count }}</span>
+                            </td>
+                    <td>{{ docente.fecha_ultima_actividad_formatted }}</td>
+                            <td>
+                                <div class="btn-group">
+                            <a href="{{ url_for('editar_docente', docente_id=docente.id) }}" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                            
+                            {% if docente.estado == 'activo' %}
+                                <button type="button" class="btn btn-secondary btn-sm" 
+                                        data-docente-id="{{ docente.id }}" 
+                                        data-docente-nombre="{{ docente.nombre }} {{ docente.apellido }}"
+                                        onclick="marcarInactivo(this.dataset.docenteId, this.dataset.docenteNombre)">
+                                    <i class="fas fa-pause"></i> Marcar Inactivo
+                                </button>
+                            {% elif docente.estado == 'inactivo' %}
+                                <form method="POST" action="{{ url_for('reactivar_docente', docente_id=docente.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('¿Reactivar este docente?')">
+                                        <i class="fas fa-play"></i> Reactivar
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            <form method="POST" action="{{ url_for('eliminar_docente', docente_id=docente.id) }}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este docente? Esta acción eliminará también todas sus materias y notas.')">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                <i class="fas fa-info-circle"></i> No hay docentes registrados
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-suspended {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.table-row-inactive {
+    background-color: #f8f9fa;
+    opacity: 0.8;
+}
+
+.table-row-inactive:hover {
+    background-color: #e9ecef;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Modal para marcar como inactivo */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: none;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.btn-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+</style>
+
+<!-- Modal para marcar como inactivo -->
+<div id="inactivoModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3><i class="fas fa-pause-circle"></i> Marcar Docente como Inactivo</h3>
+        <p>¿Estás seguro de que quieres marcar a <strong id="docenteNombre"></strong> como inactivo?</p>
+        
+        <form id="inactivoForm" method="POST">
+            <div class="form-group">
+                <label for="motivo">Motivo (opcional):</label>
+                <textarea id="motivo" name="motivo" class="form-control" rows="3" placeholder="Ej: Licencia médica, vacaciones, etc."></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-pause"></i> Marcar como Inactivo
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function marcarInactivo(docenteId, docenteNombre) {
+    document.getElementById('docenteNombre').textContent = docenteNombre;
+    document.getElementById('inactivoForm').action = `/admin/marcar_docente_inactivo/${docenteId}`;
+    document.getElementById('inactivoModal').style.display = 'block';
+}
+
+function cerrarModal() {
+    document.getElementById('inactivoModal').style.display = 'none';
+}
+
+// Cerrar modal al hacer clic en X
+document.querySelector('.close').onclick = cerrarModal;
+
+// Cerrar modal al hacer clic fuera de él
+window.onclick = function(event) {
+    const modal = document.getElementById('inactivoModal');
+    if (event.target == modal) {
+        cerrarModal();
+    }
+}
+</script>
+{% endblock %}

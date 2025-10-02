@@ -152,6 +152,14 @@
             border-left: 4px solid #3498db;
         }
 
+        .stat-card.publicadas {
+            border-left: 4px solid #27ae60;
+        }
+
+        .stat-card.no-publicadas {
+            border-left: 4px solid #f39c12;
+        }
+
         .stat-card-icon {
             width: 50px;
             height: 50px;
@@ -178,6 +186,14 @@
 
         .stat-card-icon.total {
             background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .stat-card-icon.publicadas {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .stat-card-icon.no-publicadas {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
         }
 
         .stat-card-number {
@@ -316,6 +332,26 @@
         .nota-badge.desaprobada {
             background: #f8d7da;
             color: #721c24;
+        }
+
+        .publication-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        .publication-badge.published {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .publication-badge.not-published {
+            background: #fff3cd;
+            color: #856404;
         }
 
         .btn {
@@ -479,6 +515,20 @@
                     <div class="stat-card-number">{{ notas_desaprobadas if notas_desaprobadas else 0 }}</div>
                     <div class="stat-card-label">Desaprobadas</div>
                 </div>
+                <div class="stat-card publicadas">
+                    <div class="stat-card-icon publicadas">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-card-number">{{ notas_publicadas if notas_publicadas else 0 }}</div>
+                    <div class="stat-card-label">Publicadas</div>
+                </div>
+                <div class="stat-card no-publicadas">
+                    <div class="stat-card-icon no-publicadas">
+                        <i class="fas fa-eye-slash"></i>
+                    </div>
+                    <div class="stat-card-number">{{ notas_no_publicadas if notas_no_publicadas else 0 }}</div>
+                    <div class="stat-card-label">No Publicadas</div>
+                </div>
             </div>
 
             <!-- Filters Section -->
@@ -539,6 +589,7 @@
                             <th>Tipo de Evaluación</th>
                             <th>Nota</th>
                             <th>Estado</th>
+                            <th>Publicación</th>
                             <th>Fecha</th>
                             <th>Observaciones</th>
                             <th>Acciones</th>
@@ -566,16 +617,50 @@
                                     <span class="nota-badge desaprobada">Desaprobada</span>
                                 {% endif %}
                             </td>
+                            <td class="text-center">
+                                {% if nota.publicada %}
+                                    <span class="publication-badge published">
+                                        <i class="fas fa-eye"></i> Publicada
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ nota.fecha_publicacion.strftime('%d/%m/%Y') if nota.fecha_publicacion else 'N/A' }}
+                                    </small>
+                                {% else %}
+                                    <span class="publication-badge not-published">
+                                        <i class="fas fa-eye-slash"></i> No Publicada
+                                    </span>
+                                {% endif %}
+                            </td>
                             <td>{{ nota.fecha.strftime('%d/%m/%Y') if nota.fecha else 'N/A' }}</td>
                             <td>{{ nota.observaciones or '-' }}</td>
                             <td>
-                                <a href="{{ url_for('editar_nota', nota_id=nota.id) }}" class="btn btn-primary">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                                <a href="{{ url_for('eliminar_nota', nota_id=nota.id) }}" class="btn btn-danger" 
-                                   onclick="return confirm('¿Estás seguro de que quieres eliminar esta nota?')">
-                                    <i class="fas fa-trash"></i> Eliminar
-                                </a>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('editar_nota', nota_id=nota.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    
+                                    {% if nota.publicada %}
+                                        <form method="POST" action="{{ url_for('despublicar_nota', nota_id=nota.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-warning btn-sm" 
+                                                    onclick="return confirm('¿Despublicar esta nota? El alumno ya no podrá verla.')">
+                                                <i class="fas fa-eye-slash"></i> Despublicar
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form method="POST" action="{{ url_for('publicar_nota', nota_id=nota.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-success btn-sm" 
+                                                    onclick="return confirm('¿Publicar esta nota? El alumno podrá verla.')">
+                                                <i class="fas fa-eye"></i> Publicar
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                    
+                                    <a href="{{ url_for('eliminar_nota', nota_id=nota.id) }}" class="btn btn-danger btn-sm" 
+                                       onclick="return confirm('¿Estás seguro de que quieres eliminar esta nota?')">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

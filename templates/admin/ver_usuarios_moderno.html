@@ -1,707 +1,236 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usuarios - Sistema de Notas</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="admin-dashboard">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2><i class="fas fa-user-shield"></i> Administrador</h2>
-            <p>{{ session.nombre if session.nombre else 'Admin' }}</p>
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Usuarios - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Usuarios del Sistema</h1>
+    <p>Gestiona todos los usuarios registrados en el sistema</p>
+</div>
+
+<!-- Estadísticas -->
+<div class="stats-grid">
+    <div class="stat-card users">
+        <div class="stat-icon users">
+            <i class="fas fa-users"></i>
         </div>
-        
-        <nav class="sidebar-nav">
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="{{ url_for('admin_ver_usuarios') }}" class="nav-item active">
-                <i class="fas fa-users"></i> Usuarios
-            </a>
-            <a href="{{ url_for('admin_ver_alumnos') }}" class="nav-item">
-                <i class="fas fa-user-graduate"></i> Alumnos
-            </a>
-            <a href="{{ url_for('admin_ver_materias') }}" class="nav-item">
-                <i class="fas fa-book"></i> Materias
-            </a>
-            <a href="{{ url_for('admin_ver_notas') }}" class="nav-item">
-                <i class="fas fa-clipboard-list"></i> Notas
-            </a>
-            <a href="{{ url_for('admin_mi_perfil') }}" class="nav-item">
-                <i class="fas fa-user-cog"></i> Mi Perfil
-            </a>
-            <a href="{{ url_for('logout') }}" class="nav-item">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </a>
-        </nav>
+        <div class="stat-number">{{ total_usuarios }}</div>
+        <div class="stat-label">Total Usuarios</div>
     </div>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="content-header">
-            <h1>Usuarios del Sistema</h1>
-            <p>Gestiona todos los usuarios registrados en el sistema</p>
+
+    <div class="stat-card students">
+        <div class="stat-icon students">
+            <i class="fas fa-user-shield"></i>
         </div>
+        <div class="stat-number">{{ admin_count }}</div>
+        <div class="stat-label">Administradores</div>
+    </div>
 
-        <!-- Estadísticas -->
-        <div class="stats-grid">
-            <div class="stat-card primary">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ total_usuarios }}</div>
-                    <div class="stat-label">Total Usuarios</div>
-                </div>
-            </div>
-
-            <div class="stat-card success">
-                <div class="stat-icon">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ admin_count }}</div>
-                    <div class="stat-label">Administradores</div>
-                </div>
-            </div>
-
-            <div class="stat-card warning">
-                <div class="stat-icon">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ docente_count }}</div>
-                    <div class="stat-label">Docentes</div>
-                </div>
-            </div>
-
-            <div class="stat-card info">
-                <div class="stat-icon">
-                    <i class="fas fa-user-graduate"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ alumno_count }}</div>
-                    <div class="stat-label">Alumnos</div>
-                </div>
-            </div>
+    <div class="stat-card subjects">
+        <div class="stat-icon subjects">
+            <i class="fas fa-chalkboard-teacher"></i>
         </div>
+        <div class="stat-number">{{ docente_count }}</div>
+        <div class="stat-label">Docentes</div>
+    </div>
 
-        <!-- Acciones -->
-        <div class="actions-card">
-            <div class="card-header">
-                <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
-            </div>
-            <div class="card-body">
-                <div class="actions-grid">
-                    <a href="{{ url_for('crear_usuario') }}" class="action-btn primary">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Crear Usuario</span>
-                    </a>
-                    <a href="{{ url_for('crear_usuario_alumno') }}" class="action-btn info">
-                        <i class="fas fa-user-graduate"></i>
-                        <span>Crear Usuario Alumno</span>
-                    </a>
-                </div>
-            </div>
+    <div class="stat-card grades">
+        <div class="stat-icon grades">
+            <i class="fas fa-user-graduate"></i>
         </div>
-
-        <!-- Buscador -->
-        <div class="search-card">
-            <div class="card-header">
-                <h3><i class="fas fa-search"></i> Buscar Usuarios</h3>
-            </div>
-            <div class="card-body">
-                <div class="search-container">
-                    <input type="text" id="searchUsuario" placeholder="Buscar por nombre de usuario, email o tipo..." class="search-input">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Lista de Usuarios -->
-        <div class="users-card">
-            <div class="card-header">
-                <h3><i class="fas fa-list"></i> Lista de Usuarios ({{ usuarios|length }} registrados)</h3>
-            </div>
-            <div class="card-body">
-                {% if usuarios %}
-                <div class="users-grid">
-                    {% for usuario in usuarios %}
-                    <div class="user-card" data-user-id="{{ usuario.id }}" data-usuario="{{ usuario.username|lower }}" data-email="{{ usuario.email|lower }}" data-tipo="{{ usuario.tipo|lower }}">
-                        <div class="user-header">
-                            <div class="user-avatar">
-                                {% if usuario.tipo == 'admin' %}
-                                    <i class="fas fa-user-shield"></i>
-                                {% elif usuario.tipo == 'docente' %}
-                                    <i class="fas fa-chalkboard-teacher"></i>
-                                {% else %}
-                                    <i class="fas fa-user-graduate"></i>
-                                {% endif %}
-                            </div>
-                            <div class="user-info">
-                                <h4>{{ usuario.username }}</h4>
-                                <span class="user-type {{ usuario.tipo }}">{{ usuario.tipo|title }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="user-details">
-                            <div class="detail-item">
-                                <i class="fas fa-envelope"></i>
-                                <span>{{ usuario.email }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-calendar"></i>
-                                <span>{{ usuario.fecha_creacion_formatted }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="user-actions">
-                            <a href="{{ url_for('editar_usuario', usuario_id=usuario.id) }}" class="btn-action edit" title="Editar usuario">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            {% if usuario.id != session.user_id %}
-                            <button data-user-id="{{ usuario.id }}" data-username="{{ usuario.username }}" class="btn-action delete" title="Eliminar usuario">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            {% else %}
-                            <button class="btn-action delete disabled" title="No puedes eliminar tu propio usuario" disabled>
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <h3>No hay usuarios registrados</h3>
-                    <p>Crea el primer usuario del sistema</p>
-                    <a href="{{ url_for('crear_usuario') }}" class="btn-primary">
-                        <i class="fas fa-plus"></i> Crear Usuario
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+        <div class="stat-number">{{ alumno_count }}</div>
+        <div class="stat-label">Alumnos</div>
     </div>
 </div>
 
+<!-- Acciones -->
+<div class="content-container">
+    <h2 class="section-title">
+        <i class="fas fa-bolt"></i>
+        Acciones Rápidas
+    </h2>
+    <div class="actions-grid">
+        <a href="{{ url_for('crear_usuario') }}" class="action-btn">
+            <i class="fas fa-user-plus"></i>
+            <h3>Crear Usuario</h3>
+            <p>Registrar nuevo usuario</p>
+        </a>
+        <!-- <a href="{{ url_for('crear_usuario_alumno') }}" class="action-btn">
+            <i class="fas fa-user-graduate"></i>
+            <h3>Crear Usuario Alumno</h3>
+            <p>Asociar usuario a alumno</p>
+        </a> -->
+    </div>
+</div>
+
+<!-- Buscador -->
+<div class="content-container">
+    <h2 class="section-title">
+        <i class="fas fa-search"></i>
+        Buscar Usuarios
+    </h2>
+    <div class="search-container">
+        <input type="text" id="searchUsuario" placeholder="Buscar por nombre de usuario, email o tipo..." class="form-control">
+    </div>
+</div>
+
+<!-- Lista de Usuarios -->
+<div class="table-container">
+    <div class="table-header">
+        <h2><i class="fas fa-list"></i> Lista de Usuarios ({{ usuarios|length }} registrados)</h2>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Fecha Registro</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr data-user-id="{{ usuario.id }}" data-usuario="{{ usuario.username|lower }}" data-email="{{ usuario.email|lower }}" data-tipo="{{ usuario.tipo|lower }}">
+                    <td>{{ usuario.id }}</td>
+                    <td>
+                        <strong>{{ usuario.username }}</strong>
+                    </td>
+                    <td>{{ usuario.email }}</td>
+                    <td>
+                        <span class="user-type-badge user-type-{{ usuario.tipo }}">
+                            {% if usuario.tipo == 'admin' %}
+                                <i class="fas fa-user-shield"></i> Administrador
+                            {% elif usuario.tipo == 'docente' %}
+                                <i class="fas fa-chalkboard-teacher"></i> Docente
+                            {% elif usuario.tipo == 'alumno' %}
+                                <i class="fas fa-user-graduate"></i> Alumno
+                            {% else %}
+                                <i class="fas fa-user"></i> {{ usuario.tipo|title }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-active">Activo</span>
+                    </td>
+                    <td>{{ usuario.fecha_creacion_formatted }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ url_for('editar_usuario', usuario_id=usuario.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarUsuario({{ usuario.id }}, '{{ usuario.username }}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">
+                        <i class="fas fa-info-circle"></i> No hay usuarios registrados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
 <style>
-/* Reset para ocupar toda la pantalla - v2.0 */
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-}
-
-/* Estilos para el dashboard del administrador */
-.admin-dashboard {
-    display: flex;
-    min-height: 100vh;
-    height: 100vh;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 280px;
-    background: #ffffff;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    box-sizing: border-box;
-}
-
-.sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.sidebar-header h2 {
-    margin: 0;
-    color: #2c3e50;
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.user-info {
-    padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.user-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 5px;
-}
-
-.user-role {
-    color: #ff6b6b;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.sidebar-nav {
-    flex: 1;
-    padding: 20px 0;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    color: #6c757d;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border-left: 3px solid transparent;
-}
-
-.nav-item:hover {
-    background-color: #f8f9fa;
-    color: #2c3e50;
-}
-
-.nav-item.active {
-    background: rgba(52, 152, 219, 0.2);
-    border-left-color: #3498db;
-    color: #1976d2;
-}
-
-.nav-item i {
-    margin-right: 12px;
-    width: 20px;
-    text-align: center;
-}
-
-.sidebar-footer {
-    padding: 20px 0;
-    border-top: 1px solid #e9ecef;
-}
-
-.nav-item.logout {
-    color: #e74c3c;
-}
-
-.nav-item.logout:hover {
-    background-color: #f8d7da;
-    color: #c0392b;
-}
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-    height: 100vh;
-    box-sizing: border-box;
-}
-
-.content-header {
-    margin-bottom: 30px;
-}
-
-.content-header h1 {
-    margin: 0 0 10px 0;
-    color: #333;
-    font-size: 2rem;
-    font-weight: 600;
-}
-
-.content-header p {
-    margin: 0;
-    color: #666;
-    font-size: 1.1rem;
-}
-
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    border-left: 4px solid;
-}
-
-.stat-card.primary { border-left-color: #1976d2; }
-.stat-card.success { border-left-color: #28a745; }
-.stat-card.warning { border-left-color: #ffc107; }
-.stat-card.info { border-left-color: #17a2b8; }
-
-.stat-icon {
-    margin-right: 15px;
-    font-size: 2rem;
-}
-
-.stat-card.primary .stat-icon { color: #1976d2; }
-.stat-card.success .stat-icon { color: #28a745; }
-.stat-card.warning .stat-icon { color: #ffc107; }
-.stat-card.info .stat-icon { color: #17a2b8; }
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #333;
-    line-height: 1;
-}
-
-.stat-label {
-    color: #666;
-    font-size: 0.9rem;
-    margin-top: 5px;
-}
-
-/* Cards */
-.actions-card, .search-card, .users-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-    overflow: hidden;
-}
-
-.card-header {
-    padding: 20px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.card-header h3 {
-    margin: 0;
-    color: #333;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.card-header i {
-    margin-right: 8px;
-    color: #1976d2;
-}
-
-.card-body {
-    padding: 20px;
-}
-
-/* Actions Grid */
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background: #f8f9fa;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #333;
-    transition: all 0.3s ease;
-}
-
-.action-btn:hover {
-    background: white;
-    border-color: #1976d2;
-    color: #1976d2;
-    text-decoration: none;
-    transform: translateY(-2px);
-}
-
-.action-btn i {
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.action-btn span {
-    font-weight: 500;
-    text-align: center;
-}
-
-/* Search */
 .search-container {
     position: relative;
+    margin-bottom: 20px;
 }
 
-.search-input {
-    width: 100%;
-    padding: 12px 45px 12px 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
+.search-container .form-control {
+    padding-right: 40px;
 }
 
-.search-input:focus {
-    outline: none;
-    border-color: #1976d2;
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-}
-
-.search-icon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #666;
-}
-
-/* Users Grid */
-.users-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.user-card {
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 20px;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.user-card:hover {
-    border-color: #1976d2;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.user-header {
-    display: flex;
+.user-type-badge {
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 15px;
-}
-
-.user-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #1976d2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    color: white;
-    font-size: 1.5rem;
-}
-
-.user-info h4 {
-    margin: 0 0 5px 0;
-    color: #333;
-    font-size: 1.1rem;
-}
-
-.user-type {
+    gap: 5px;
     padding: 4px 8px;
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 500;
-    text-transform: uppercase;
 }
 
-.user-type.admin {
-    background: #dc3545;
-    color: white;
+.user-type-admin {
+    background: #d1ecf1;
+    color: #0c5460;
 }
 
-.user-type.docente {
-    background: #ffc107;
-    color: #333;
+.user-type-docente {
+    background: #fff3cd;
+    color: #856404;
 }
 
-.user-type.alumno {
-    background: #28a745;
-    color: white;
+.user-type-alumno {
+    background: #d4edda;
+    color: #155724;
 }
 
-.user-details {
-    margin-bottom: 15px;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.detail-item i {
-    margin-right: 8px;
-    width: 16px;
-    text-align: center;
-}
-
-.user-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.btn-action {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-action.edit {
-    background: #17a2b8;
-    color: white;
-}
-
-.btn-action.edit:hover {
-    background: #138496;
-    transform: scale(1.1);
-}
-
-.btn-action.delete {
-    background: #dc3545;
-    color: white;
-}
-
-.btn-action.delete:hover {
-    background: #c82333;
-    transform: scale(1.1);
-}
-
-.btn-action.disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.btn-action.disabled:hover {
-    background: #6c757d;
-    transform: none;
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-}
-
-.empty-state i {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    color: #ccc;
-}
-
-.empty-state h3 {
-    margin: 0 0 10px 0;
-    color: #333;
-}
-
-.empty-state p {
-    margin: 0 0 30px 0;
-}
-
-/* Buttons */
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: #1976d2;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 8px;
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 500;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.btn-primary:hover {
-    background: #1565c0;
-    color: white;
-    text-decoration: none;
+.status-active {
+    background: #d4edda;
+    color: #155724;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .admin-dashboard {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        height: auto;
-    }
-    
-    .main-content {
-        padding: 20px;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-    
-    .users-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .actions-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
+.btn-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: #6c757d;
 }
 </style>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 // Función de búsqueda
 document.getElementById('searchUsuario').addEventListener('input', function() {
     const searchTerm = this.value.toLowerCase();
-    const userCards = document.querySelectorAll('.user-card');
+    const rows = document.querySelectorAll('tbody tr');
     
-    userCards.forEach(card => {
-        const usuario = card.dataset.usuario;
-        const email = card.dataset.email;
-        const tipo = card.dataset.tipo;
+    rows.forEach(row => {
+        const usuario = row.getAttribute('data-usuario') || '';
+        const email = row.getAttribute('data-email') || '';
+        const tipo = row.getAttribute('data-tipo') || '';
         
         if (usuario.includes(searchTerm) || email.includes(searchTerm) || tipo.includes(searchTerm)) {
-            card.style.display = 'block';
+            row.style.display = '';
         } else {
-            card.style.display = 'none';
+            row.style.display = 'none';
         }
     });
 });
 
 // Función para eliminar usuario
 function eliminarUsuario(id, username) {
-    // Obtener información del usuario desde la tarjeta
-    const userCard = document.querySelector(`[data-user-id="${id}"]`);
-    const userType = userCard ? userCard.querySelector('.user-type').textContent : 'usuario';
+    const userRow = document.querySelector(`[data-user-id="${id}"]`);
+    const userType = userRow ? userRow.querySelector('.user-type-badge').textContent.trim() : 'usuario';
     
     let message = `¿Estás seguro de que quieres eliminar al ${userType.toLowerCase()} "${username}"?\n\n`;
     
@@ -725,18 +254,5 @@ function eliminarUsuario(id, username) {
         form.submit();
     }
 }
-
-// Event listener para los botones de eliminar
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('.btn-action.delete:not(.disabled)');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.getAttribute('data-user-id');
-            const username = this.getAttribute('data-username');
-            eliminarUsuario(userId, username);
-        });
-    });
-});
 </script>
-</body>
-</html>
+{% endblock %}
