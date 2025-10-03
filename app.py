@@ -122,6 +122,21 @@ class Materia(db.Model):
     docente = db.relationship('Docente', backref=db.backref('materias', lazy=True))
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Matricula(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    alumno_id = db.Column(db.Integer, db.ForeignKey('alumno.id'), nullable=False)
+    materia_id = db.Column(db.Integer, db.ForeignKey('materia.id'), nullable=False)
+    fecha_matricula = db.Column(db.DateTime, default=datetime.utcnow)
+    estado = db.Column(db.String(20), default='activa')  # 'activa', 'completada', 'cancelada'
+    observaciones = db.Column(db.Text)
+    
+    # Relaciones
+    alumno = db.relationship('Alumno', backref=db.backref('matriculas', lazy=True))
+    materia = db.relationship('Materia', backref=db.backref('matriculas', lazy=True))
+    
+    # Índice único para evitar matrículas duplicadas
+    __table_args__ = (db.UniqueConstraint('alumno_id', 'materia_id', name='unique_matricula'),)
+
 class Nota(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     alumno_id = db.Column(db.Integer, db.ForeignKey('alumno.id'), nullable=False)
@@ -441,41 +456,53 @@ def registrar_docente():
         direccion = request.form.get('direccion', '')
         fecha_nacimiento = request.form.get('fecha_nacimiento')
         especialidad = request.form.get('especialidad', '')
+        especialidad_personalizada = request.form.get('especialidad_personalizada', '')
         
         try:
+            # Validaciones básicas
+            if not fecha_nacimiento:
+                flash('La fecha de nacimiento es requerida', 'error')
+                return render_template('admin/registrar_docente_simple.html')
+            
+            
             # Verificar que el DNI no exista
             if Docente.query.filter_by(dni=dni).first():
                 flash('Ya existe un docente con ese DNI', 'error')
-            elif Docente.query.filter_by(email=email).first():
+                return render_template('admin/registrar_docente_simple.html')
+            
+            # Verificar que el email no exista
+            if Docente.query.filter_by(email=email).first():
                 flash('Ya existe un docente con ese email', 'error')
-            else:
-                # Convertir fecha de nacimiento (requerida)
-                if not fecha_nacimiento:
-                    flash('La fecha de nacimiento es requerida', 'error')
-                    return render_template('admin/registrar_docente_moderno.html')
-                
-                try:
-                    fecha_nac = datetime.strptime(fecha_nacimiento, '%Y-%m-%d').date()
-                except ValueError:
-                    flash('Formato de fecha inválido', 'error')
-                    return render_template('admin/registrar_docente_moderno.html')
-                
-                # Crear el docente
-                docente = Docente(
-                    dni=dni,
-                    nombre=nombre,
-                    apellido=apellido,
-                    email=email,
-                    telefono=telefono,
-                    direccion=direccion,
-                    fecha_nacimiento=fecha_nac,
-                    especialidad=especialidad
-                )
-                
-                db.session.add(docente)
-                db.session.commit()
-                flash('Docente registrado exitosamente', 'success')
-                return redirect(url_for('admin_ver_docentes'))
+                return render_template('admin/registrar_docente_simple.html')
+            
+            
+            # Convertir fecha de nacimiento
+            try:
+                fecha_nac = datetime.strptime(fecha_nacimiento, '%Y-%m-%d').date()
+            except ValueError:
+                flash('Formato de fecha inválido', 'error')
+                return render_template('admin/registrar_docente_simple.html')
+            
+            # Determinar especialidad final
+            especialidad_final = especialidad_personalizada if especialidad == 'Otra' and especialidad_personalizada else especialidad
+            
+            # Crear el docente (sin usuario asociado)
+            docente = Docente(
+                dni=dni,
+                nombre=nombre,
+                apellido=apellido,
+                email=email,
+                telefono=telefono,
+                direccion=direccion,
+                fecha_nacimiento=fecha_nac,
+                especialidad=especialidad_final,
+                estado='activo'
+            )
+            
+            db.session.add(docente)
+            db.session.commit()
+            flash(f'Docente "{nombre} {apellido}" registrado exitosamente. Puedes crear un usuario para él desde la sección de usuarios.', 'success')
+            return redirect(url_for('admin_ver_docentes'))
         except Exception as e:
             db.session.rollback()
             if 'UNIQUE constraint failed: docente.dni' in str(e):
@@ -486,7 +513,7 @@ def registrar_docente():
                 flash('Error al registrar el docente. Inténtalo de nuevo.', 'error')
                 print(f"Error al registrar docente: {e}")
     
-    return render_template('admin/registrar_docente_moderno.html')
+    return render_template('admin/registrar_docente_simple.html')
 
 @app.route('/admin/editar_docente/<int:docente_id>', methods=['GET', 'POST'])
 def editar_docente(docente_id):
@@ -969,7 +996,7 @@ def registrar_alumno():
                 flash('Error al registrar el alumno. Inténtalo de nuevo.', 'error')
                 print(f"Error al registrar alumno: {e}")
     
-    return render_template('admin/registrar_alumno_moderno.html')
+    return render_template('admin/registrar_alumno_simple.html')
 
 @app.route('/admin/editar_alumno/<int:alumno_id>', methods=['GET', 'POST'])
 def editar_alumno(alumno_id):
@@ -1174,21 +1201,33 @@ def admin_eliminar_materia(materia_id):
     
     try:
         materia = Materia.query.get_or_404(materia_id)
+        nombre_materia = materia.nombre
         
         # Eliminar todas las notas de la materia primero
+        notas_eliminadas = Nota.query.filter_by(materia_id=materia_id).count()
         Nota.query.filter_by(materia_id=materia_id).delete()
+        
+        # Eliminar todas las matrículas de la materia
+        matriculas_eliminadas = Matricula.query.filter_by(materia_id=materia_id).count()
+        Matricula.query.filter_by(materia_id=materia_id).delete()
         
         # Eliminar la materia
         db.session.delete(materia)
         db.session.commit()
         
-        flash('Materia eliminada exitosamente', 'success')
+        mensaje = f'Materia "{nombre_materia}" eliminada exitosamente'
+        if notas_eliminadas > 0:
+            mensaje += f' (se eliminaron {notas_eliminadas} notas)'
+        if matriculas_eliminadas > 0:
+            mensaje += f' (se eliminaron {matriculas_eliminadas} matrículas)'
+        
+        flash(mensaje, 'success')
     except Exception as e:
         db.session.rollback()
         flash('Error al eliminar la materia. Inténtalo de nuevo.', 'error')
         print(f"Error al eliminar materia: {e}")
     
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_ver_materias'))
 
 @app.route('/docente/dashboard')
 def docente_dashboard():
@@ -1207,14 +1246,19 @@ def docente_dashboard():
     
     docente_id = usuario.docente.id
     materias = Materia.query.filter_by(docente_id=docente_id).all()
-    alumnos = Alumno.query.all()
+    
+    # Obtener solo alumnos matriculados en las materias del docente
+    alumnos_matriculados = db.session.query(Alumno).join(Matricula).join(Materia).filter(
+        Materia.docente_id == docente_id,
+        Matricula.estado == 'activa'
+    ).distinct().all()
     
     # Contar las notas del docente
     notas_count = 0
     for materia in materias:
         notas_count += Nota.query.filter_by(materia_id=materia.id).count()
     
-    return render_template('docente/dashboard_moderno.html', materias=materias, alumnos=alumnos, notas_count=notas_count)
+    return render_template('docente/dashboard_moderno.html', materias=materias, alumnos=alumnos_matriculados, notas_count=notas_count)
 
 @app.route('/docente/agregar_nota', methods=['GET', 'POST'])
 def agregar_nota():
@@ -1233,7 +1277,12 @@ def agregar_nota():
     
     docente_id = usuario.docente.id
     materias = Materia.query.filter_by(docente_id=docente_id).all()
-    alumnos = Alumno.query.all()
+    
+    # Obtener solo alumnos matriculados en las materias del docente
+    alumnos_matriculados = db.session.query(Alumno).join(Matricula).join(Materia).filter(
+        Materia.docente_id == docente_id,
+        Matricula.estado == 'activa'
+    ).distinct().all()
     
     if request.method == 'POST':
         alumno_id = request.form['alumno_id']
@@ -1248,6 +1297,16 @@ def agregar_nota():
             flash('No tienes permisos para agregar notas a esta materia', 'error')
             return redirect(url_for('agregar_nota'))
         
+        # Verificar que el alumno está matriculado en la materia
+        matricula = Matricula.query.filter_by(
+            alumno_id=alumno_id,
+            materia_id=materia_id,
+            estado='activa'
+        ).first()
+        if not matricula:
+            flash('El alumno no está matriculado en esta materia', 'error')
+            return redirect(url_for('agregar_nota'))
+        
         nueva_nota = Nota(
             alumno_id=alumno_id,
             materia_id=materia_id,
@@ -1260,7 +1319,7 @@ def agregar_nota():
         flash('Nota agregada exitosamente', 'success')
         return redirect(url_for('docente_dashboard'))
     
-    return render_template('docente/agregar_nota_moderno.html', materias=materias, alumnos=alumnos)
+    return render_template('docente/agregar_nota_moderno.html', materias=materias, alumnos=alumnos_matriculados)
 
 @app.route('/docente/ver_notas')
 def docente_ver_notas():
@@ -1494,8 +1553,19 @@ def docente_ver_alumnos():
     if not verificar_estado_docente():
         return redirect(url_for('login'))
     
-    # Obtener todos los alumnos ordenados por fecha de registro
-    alumnos = Alumno.query.order_by(Alumno.fecha_registro.desc()).all()
+    # Obtener el docente asociado al usuario
+    usuario = Usuario.query.get(session['user_id'])
+    if not usuario or not usuario.docente:
+        flash('No se encontró información del docente', 'error')
+        return redirect(url_for('login'))
+    
+    docente_id = usuario.docente.id
+    
+    # Obtener solo alumnos matriculados en las materias del docente
+    alumnos = db.session.query(Alumno).join(Matricula).join(Materia).filter(
+        Materia.docente_id == docente_id,
+        Matricula.estado == 'activa'
+    ).distinct().order_by(Alumno.nombre, Alumno.apellido).all()
     
     # Calcular estadísticas
     total_alumnos = len(alumnos)
@@ -1696,7 +1766,7 @@ def alumno_ver_notas():
         return redirect(url_for('logout'))
     
     # Obtener solo las notas publicadas del alumno con información de materia y docente
-    notas_query = db.session.query(Nota, Materia, Usuario).join(Materia, Nota.materia_id == Materia.id).join(Usuario, Materia.docente_id == Usuario.id).filter(Nota.alumno_id == alumno.id, Nota.publicada == True).order_by(Nota.fecha.desc()).all()
+    notas_query = db.session.query(Nota, Materia, Docente).join(Materia, Nota.materia_id == Materia.id).join(Docente, Materia.docente_id == Docente.id).filter(Nota.alumno_id == alumno.id, Nota.publicada == True).order_by(Nota.fecha.desc()).all()
     
     # Crear una lista con información adicional incluyendo el estado
     notas = []
@@ -1719,7 +1789,27 @@ def alumno_ver_notas():
         
         notas.append((nota, materia, docente, estado, clase_estado))
     
-    return render_template('alumno/ver_notas.html', alumno=alumno, notas=notas)
+    # Crear resumen por materia
+    resumen_materias = []
+    materias_unicas = {}
+    
+    for nota, materia, docente, estado, clase_estado in notas:
+        if materia.id not in materias_unicas:
+            materias_unicas[materia.id] = {
+                'materia': materia,
+                'docente': docente,
+                'notas': [],
+                'total': 0
+            }
+        materias_unicas[materia.id]['notas'].append(nota.nota)
+        materias_unicas[materia.id]['total'] += 1
+    
+    # Calcular promedios
+    for materia_id, data in materias_unicas.items():
+        promedio = sum(data['notas']) / len(data['notas']) if data['notas'] else 0
+        resumen_materias.append((data['materia'], promedio, data['total'], data['docente']))
+    
+    return render_template('alumno/ver_notas.html', alumno=alumno, notas=notas, resumen_materias=resumen_materias)
 
 @app.route('/alumno/ver_materias')
 def alumno_ver_materias():
@@ -1911,6 +2001,193 @@ def admin_ver_notas_alumno(alumno_id):
         flash('Error al cargar las notas del alumno', 'error')
         return redirect(url_for('admin_ver_alumnos'))
 
+
+# Rutas de Matrícula
+@app.route('/admin/matriculas')
+def admin_matriculas():
+    """Vista principal de gestión de matrículas"""
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        # Obtener todas las matrículas con información relacionada
+        matriculas = db.session.query(Matricula, Alumno, Materia, Docente).join(
+            Alumno, Matricula.alumno_id == Alumno.id
+        ).join(
+            Materia, Matricula.materia_id == Materia.id
+        ).join(
+            Docente, Materia.docente_id == Docente.id
+        ).order_by(Matricula.fecha_matricula.desc()).all()
+        
+        # Obtener estadísticas
+        total_matriculas = len(matriculas)
+        matriculas_activas = len([m for m, _, _, _ in matriculas if m.estado == 'activa'])
+        matriculas_completadas = len([m for m, _, _, _ in matriculas if m.estado == 'completada'])
+        
+        return render_template('admin/matriculas_moderno.html',
+                             matriculas=matriculas,
+                             total_matriculas=total_matriculas,
+                             matriculas_activas=matriculas_activas,
+                             matriculas_completadas=matriculas_completadas)
+    
+    except Exception as e:
+        print(f"Error en admin_matriculas: {e}")
+        flash('Error al cargar las matrículas', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/matricular_alumno', methods=['GET', 'POST'])
+def admin_matricular_alumno():
+    """Matricular un alumno en una materia"""
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        try:
+            alumno_id = request.form['alumno_id']
+            materia_id = request.form['materia_id']
+            observaciones = request.form.get('observaciones', '')
+            
+            # Verificar que no exista ya la matrícula
+            matricula_existente = Matricula.query.filter_by(
+                alumno_id=alumno_id, 
+                materia_id=materia_id
+            ).first()
+            
+            if matricula_existente:
+                flash('El alumno ya está matriculado en esta materia', 'error')
+                return redirect(url_for('admin_matricular_alumno'))
+            
+            # Crear nueva matrícula
+            nueva_matricula = Matricula(
+                alumno_id=alumno_id,
+                materia_id=materia_id,
+                observaciones=observaciones
+            )
+            
+            db.session.add(nueva_matricula)
+            db.session.commit()
+            
+            # Obtener información para el mensaje
+            alumno = Alumno.query.get(alumno_id)
+            materia = Materia.query.get(materia_id)
+            
+            flash(f'Alumno {alumno.nombre} {alumno.apellido} matriculado exitosamente en {materia.nombre}', 'success')
+            return redirect(url_for('admin_matriculas'))
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error al matricular alumno: {e}")
+            flash('Error al matricular al alumno. Inténtalo de nuevo.', 'error')
+    
+    # Obtener alumnos y materias para el formulario
+    alumnos = Alumno.query.order_by(Alumno.nombre, Alumno.apellido).all()
+    materias = db.session.query(Materia, Docente).join(Docente).order_by(Materia.nombre).all()
+    
+    return render_template('admin/matricular_alumno_moderno.html', 
+                         alumnos=alumnos, 
+                         materias=materias)
+
+@app.route('/admin/desmatricular_alumno/<int:matricula_id>', methods=['POST'])
+def admin_desmatricular_alumno(matricula_id):
+    """Desmatricular un alumno de una materia"""
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        matricula = Matricula.query.get_or_404(matricula_id)
+        
+        # Obtener información antes de eliminar
+        alumno = Alumno.query.get(matricula.alumno_id)
+        materia = Materia.query.get(matricula.materia_id)
+        
+        # Eliminar todas las notas del alumno en esta materia
+        Nota.query.filter_by(
+            alumno_id=matricula.alumno_id,
+            materia_id=matricula.materia_id
+        ).delete()
+        
+        # Eliminar la matrícula
+        db.session.delete(matricula)
+        db.session.commit()
+        
+        flash(f'Alumno {alumno.nombre} {alumno.apellido} desmatriculado exitosamente de {materia.nombre}', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al desmatricular alumno: {e}")
+        flash('Error al desmatricular al alumno. Inténtalo de nuevo.', 'error')
+    
+    return redirect(url_for('admin_matriculas'))
+
+@app.route('/admin/cambiar_estado_matricula/<int:matricula_id>', methods=['POST'])
+def admin_cambiar_estado_matricula(matricula_id):
+    """Cambiar el estado de una matrícula"""
+    if not session.get('user_id') or session.get('tipo') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        matricula = Matricula.query.get_or_404(matricula_id)
+        nuevo_estado = request.form['estado']
+        
+        matricula.estado = nuevo_estado
+        db.session.commit()
+        
+        # Obtener información para el mensaje
+        alumno = Alumno.query.get(matricula.alumno_id)
+        materia = Materia.query.get(matricula.materia_id)
+        
+        flash(f'Estado de matrícula de {alumno.nombre} {alumno.apellido} en {materia.nombre} cambiado a {nuevo_estado}', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al cambiar estado de matrícula: {e}")
+        flash('Error al cambiar el estado de la matrícula. Inténtalo de nuevo.', 'error')
+    
+    return redirect(url_for('admin_matriculas'))
+
+# Ruta AJAX para obtener materias de un alumno matriculado
+@app.route('/docente/obtener_materias_alumno/<int:alumno_id>')
+def obtener_materias_alumno(alumno_id):
+    """Obtener las materias en las que está matriculado un alumno (para el docente actual)"""
+    if not session.get('user_id') or session.get('tipo') != 'docente':
+        return jsonify({'error': 'No autorizado'}), 401
+    
+    # Verificar estado del docente
+    if not verificar_estado_docente():
+        return jsonify({'error': 'Docente inactivo'}), 401
+    
+    try:
+        # Obtener el docente asociado al usuario
+        usuario = Usuario.query.get(session['user_id'])
+        if not usuario or not usuario.docente:
+            return jsonify({'error': 'Docente no encontrado'}), 404
+        
+        docente_id = usuario.docente.id
+        
+        # Obtener las materias del docente en las que está matriculado el alumno
+        materias = db.session.query(Materia).join(Matricula).filter(
+            Matricula.alumno_id == alumno_id,
+            Materia.docente_id == docente_id,
+            Matricula.estado == 'activa'
+        ).all()
+        
+        # Formatear la respuesta
+        materias_data = []
+        for materia in materias:
+            materias_data.append({
+                'id': materia.id,
+                'nombre': materia.nombre,
+                'codigo': materia.codigo
+            })
+        
+        return jsonify({
+            'success': True,
+            'materias': materias_data
+        })
+        
+    except Exception as e:
+        print(f"Error al obtener materias del alumno: {e}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 # Inicializar base de datos y usuario admin
 def init_db():

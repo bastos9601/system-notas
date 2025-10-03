@@ -190,6 +190,57 @@
             border-color: #3498db;
             box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
         }
+        
+        /* Estilos para mensajes de notificación */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 0;
+            margin-left: auto;
+        }
+        
+        .btn-close:hover {
+            opacity: 1;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
 
         .form-control:hover {
             border-color: #3498db;
@@ -655,9 +706,140 @@
             });
         }
 
+        // Función para cargar materias de un alumno seleccionado
+        function cargarMateriasAlumno() {
+            const alumnoSelect = document.getElementById('alumno_id');
+            const materiaSelect = document.getElementById('materia_id');
+            
+            alumnoSelect.addEventListener('change', function() {
+                const alumnoId = this.value;
+                
+                // Limpiar el select de materias
+                materiaSelect.innerHTML = '<option value="">Cargando materias...</option>';
+                materiaSelect.disabled = true;
+                
+                if (alumnoId) {
+                    // Hacer petición AJAX para obtener las materias del alumno
+                    fetch(`/docente/obtener_materias_alumno/${alumnoId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Limpiar y llenar el select de materias
+                                materiaSelect.innerHTML = '<option value="">Selecciona una materia</option>';
+                                
+                                if (data.materias.length > 0) {
+                                    data.materias.forEach(materia => {
+                                        const option = document.createElement('option');
+                                        option.value = materia.id;
+                                        option.textContent = `${materia.nombre} (${materia.codigo})`;
+                                        materiaSelect.appendChild(option);
+                                    });
+                                    
+                                    // Si solo hay una materia, seleccionarla automáticamente
+                                    if (data.materias.length === 1) {
+                                        materiaSelect.value = data.materias[0].id;
+                                        // Mostrar mensaje informativo
+                                        mostrarMensajeInfo(`Materia "${data.materias[0].nombre}" seleccionada automáticamente para este alumno.`);
+                                    }
+                                } else {
+                                    materiaSelect.innerHTML = '<option value="">No hay materias disponibles</option>';
+                                    mostrarMensajeAdvertencia('Este alumno no está matriculado en ninguna de tus materias.');
+                                }
+                                
+                                materiaSelect.disabled = false;
+                            } else {
+                                materiaSelect.innerHTML = '<option value="">Error al cargar materias</option>';
+                                mostrarMensajeError('Error al cargar las materias del alumno.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            materiaSelect.innerHTML = '<option value="">Error al cargar materias</option>';
+                            mostrarMensajeError('Error de conexión al cargar las materias.');
+                        });
+                } else {
+                    // Si no hay alumno seleccionado, mostrar todas las materias
+                    materiaSelect.innerHTML = '<option value="">Selecciona una materia</option>';
+                    {% for materia in materias %}
+                    const option{{ loop.index }} = document.createElement('option');
+                    option{{ loop.index }}.value = '{{ materia.id }}';
+                    option{{ loop.index }}.textContent = '{{ materia.nombre }} ({{ materia.codigo }})';
+                    materiaSelect.appendChild(option{{ loop.index }});
+                    {% endfor %}
+                    materiaSelect.disabled = false;
+                }
+            });
+        }
+        
+        // Función para mostrar mensajes informativos
+        function mostrarMensajeInfo(mensaje) {
+            const mensajeDiv = document.createElement('div');
+            mensajeDiv.className = 'alert alert-info alert-dismissible fade show';
+            mensajeDiv.style.position = 'fixed';
+            mensajeDiv.style.top = '20px';
+            mensajeDiv.style.right = '20px';
+            mensajeDiv.style.zIndex = '9999';
+            mensajeDiv.style.maxWidth = '400px';
+            mensajeDiv.innerHTML = `
+                <i class="fas fa-info-circle"></i> ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(mensajeDiv);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (mensajeDiv.parentNode) {
+                    mensajeDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function mostrarMensajeAdvertencia(mensaje) {
+            const mensajeDiv = document.createElement('div');
+            mensajeDiv.className = 'alert alert-warning alert-dismissible fade show';
+            mensajeDiv.style.position = 'fixed';
+            mensajeDiv.style.top = '20px';
+            mensajeDiv.style.right = '20px';
+            mensajeDiv.style.zIndex = '9999';
+            mensajeDiv.style.maxWidth = '400px';
+            mensajeDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(mensajeDiv);
+            
+            setTimeout(() => {
+                if (mensajeDiv.parentNode) {
+                    mensajeDiv.remove();
+                }
+            }, 7000);
+        }
+        
+        function mostrarMensajeError(mensaje) {
+            const mensajeDiv = document.createElement('div');
+            mensajeDiv.className = 'alert alert-danger alert-dismissible fade show';
+            mensajeDiv.style.position = 'fixed';
+            mensajeDiv.style.top = '20px';
+            mensajeDiv.style.right = '20px';
+            mensajeDiv.style.zIndex = '9999';
+            mensajeDiv.style.maxWidth = '400px';
+            mensajeDiv.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i> ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(mensajeDiv);
+            
+            setTimeout(() => {
+                if (mensajeDiv.parentNode) {
+                    mensajeDiv.remove();
+                }
+            }, 7000);
+        }
+
         // Inicializar funciones
         document.addEventListener('DOMContentLoaded', function() {
             cargarAlumnosPorCiclo();
+            cargarMateriasAlumno();
             establecerFechaActual();
             validarFormulario();
             autoHideFlashMessages();

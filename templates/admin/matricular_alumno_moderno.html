@@ -1,0 +1,199 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Matricular Alumno - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-user-plus text-primary"></i>
+                Matricular Alumno
+            </h1>
+            <p class="text-muted">Registra un alumno en una materia específica</p>
+        </div>
+        <a href="{{ url_for('admin_matriculas') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Matrículas
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulario de Matrícula -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-edit"></i> Formulario de Matrícula
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="matriculaForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="alumno_id" class="form-label">
+                                        <i class="fas fa-user"></i> Alumno *
+                                    </label>
+                                    <select class="form-control" id="alumno_id" name="alumno_id" required>
+                                        <option value="">Selecciona un alumno</option>
+                                        {% for alumno in alumnos %}
+                                        <option value="{{ alumno.id }}">
+                                            {{ alumno.nombre }} {{ alumno.apellido }} - DNI: {{ alumno.dni }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="materia_id" class="form-label">
+                                        <i class="fas fa-book"></i> Materia *
+                                    </label>
+                                    <select class="form-control" id="materia_id" name="materia_id" required>
+                                        <option value="">Selecciona una materia</option>
+                                        {% for materia, docente in materias %}
+                                        <option value="{{ materia.id }}">
+                                            {{ materia.nombre }} - {{ materia.codigo }} ({{ docente.nombre }} {{ docente.apellido }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="observaciones" class="form-label">
+                                <i class="fas fa-comment"></i> Observaciones
+                            </label>
+                            <textarea class="form-control" id="observaciones" name="observaciones" rows="3" 
+                                      placeholder="Observaciones adicionales sobre la matrícula (opcional)"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Matricular Alumno
+                            </button>
+                            <a href="{{ url_for('admin_matriculas') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Información de Ayuda -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-info-circle"></i> Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb"></i> Consejos:</h6>
+                        <ul class="mb-0">
+                            <li>Verifica que el alumno no esté ya matriculado en la materia</li>
+                            <li>Las observaciones son opcionales pero recomendadas</li>
+                            <li>El estado inicial será "Activa"</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Importante:</h6>
+                        <p class="mb-0">Al desmatricular un alumno, se eliminarán todas sus notas en esa materia.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Estadísticas Rápidas -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-chart-bar"></i> Estadísticas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-right">
+                                <h4 class="text-primary">{{ alumnos|length }}</h4>
+                                <small class="text-muted">Alumnos</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ materias|length }}</h4>
+                            <small class="text-muted">Materias</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+.alert {
+    border-radius: 0.35rem;
+}
+
+.card {
+    border-radius: 0.35rem;
+}
+
+.border-right {
+    border-right: 1px solid #e3e6f0 !important;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Validación del formulario
+    $('#matriculaForm').on('submit', function(e) {
+        const alumnoId = $('#alumno_id').val();
+        const materiaId = $('#materia_id').val();
+        
+        if (!alumnoId || !materiaId) {
+            e.preventDefault();
+            alert('Por favor, selecciona tanto el alumno como la materia.');
+            return false;
+        }
+        
+        // Cambiar el botón a estado de carga
+        const submitBtn = $('#submitBtn');
+        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
+        submitBtn.prop('disabled', true);
+    });
+    
+    // Mejorar la experiencia del usuario con los selects
+    $('#alumno_id, #materia_id').on('change', function() {
+        const alumnoId = $('#alumno_id').val();
+        const materiaId = $('#materia_id').val();
+        
+        if (alumnoId && materiaId) {
+            // Aquí podrías agregar una verificación AJAX para ver si ya existe la matrícula
+            // Por ahora, solo mostramos un mensaje informativo
+            console.log('Alumno y materia seleccionados');
+        }
+    });
+});
+</script>
+{% endblock %}

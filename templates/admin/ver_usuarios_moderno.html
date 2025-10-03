@@ -122,9 +122,11 @@
                             <a href="{{ url_for('editar_usuario', usuario_id=usuario.id) }}" class="btn btn-warning btn-sm">
                                 <i class="fas fa-edit"></i> Editar
                             </a>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarUsuario({{ usuario.id }}, '{{ usuario.username }}')">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
+                            <form method="POST" action="{{ url_for('eliminar_usuario', usuario_id=usuario.id) }}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar al usuario \'{{ usuario.username }}\'? Esta acción no se puede deshacer.')">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -227,23 +229,16 @@ document.getElementById('searchUsuario').addEventListener('input', function() {
     });
 });
 
-// Función para eliminar usuario
+// Función para eliminar usuario (mantenida por compatibilidad)
 function eliminarUsuario(id, username) {
-    const userRow = document.querySelector(`[data-user-id="${id}"]`);
-    const userType = userRow ? userRow.querySelector('.user-type-badge').textContent.trim() : 'usuario';
+    console.log('Función eliminarUsuario llamada con ID:', id, 'Username:', username);
     
-    let message = `¿Estás seguro de que quieres eliminar al ${userType.toLowerCase()} "${username}"?\n\n`;
-    
-    // Agregar información específica según el tipo de usuario
-    if (userType.toLowerCase().includes('docente')) {
-        message += '⚠️ ADVERTENCIA: Se eliminarán también todas las materias y notas asociadas a este docente.\n\n';
-    } else if (userType.toLowerCase().includes('alumno')) {
-        message += '⚠️ ADVERTENCIA: Se eliminarán también todas las notas de este alumno.\n\n';
-    }
-    
+    let message = `¿Estás seguro de que quieres eliminar al usuario "${username}"?\n\n`;
     message += 'Esta acción no se puede deshacer.';
     
     if (confirm(message)) {
+        console.log('Usuario confirmó eliminación, enviando formulario...');
+        
         // Crear un formulario para enviar la petición POST
         const form = document.createElement('form');
         form.method = 'POST';
@@ -252,6 +247,8 @@ function eliminarUsuario(id, username) {
         // Añadir el formulario al DOM y enviarlo
         document.body.appendChild(form);
         form.submit();
+    } else {
+        console.log('Usuario canceló la eliminación');
     }
 }
 </script>

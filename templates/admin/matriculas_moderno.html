@@ -1,0 +1,900 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Gestión de Matrículas - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Moderno -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header-modern">
+                <div class="header-content">
+                    <div class="header-text">
+                        <h1 class="page-title">
+                            <span class="title-icon">
+                                <i class="fas fa-user-graduate"></i>
+                            </span>
+                            Gestión de Matrículas
+                        </h1>
+                        <p class="page-subtitle">Administra las matrículas de alumnos en las materias del sistema</p>
+                    </div>
+                    <div class="header-action">
+                        <a href="{{ url_for('admin_matricular_alumno') }}" class="btn-modern btn-primary-modern">
+                            <i class="fas fa-plus"></i>
+                            <span>Matricular Alumno</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Modernas -->
+    <div class="row mb-5">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card stats-card-primary">
+                <div class="stats-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-number">{{ total_matriculas }}</div>
+                    <div class="stats-label">Total Matrículas</div>
+                </div>
+                <div class="stats-trend">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card stats-card-success">
+                <div class="stats-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-number">{{ matriculas_activas }}</div>
+                    <div class="stats-label">Matrículas Activas</div>
+                </div>
+                <div class="stats-trend">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card stats-card-info">
+                <div class="stats-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-number">{{ matriculas_completadas }}</div>
+                    <div class="stats-label">Completadas</div>
+                </div>
+                <div class="stats-trend">
+                    <i class="fas fa-trophy"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card stats-card-warning">
+                <div class="stats-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-number">{{ total_matriculas - matriculas_activas - matriculas_completadas }}</div>
+                    <div class="stats-label">Canceladas</div>
+                </div>
+                <div class="stats-trend">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Matrículas Moderna -->
+    <div class="modern-card">
+        <div class="card-header-modern">
+            <div class="header-left">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Matrículas
+                </h3>
+                <p class="card-subtitle">Gestiona todas las matrículas del sistema</p>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar matrículas..." id="searchInput">
+                </div>
+            </div>
+        </div>
+        <div class="card-body-modern">
+            {% if matriculas %}
+            <div class="table-container">
+                <table class="modern-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="th-content">
+                                    <i class="fas fa-user"></i>
+                                    Alumno
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-content">
+                                    <i class="fas fa-book"></i>
+                                    Materia
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-content">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                    Docente
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-content">
+                                    <i class="fas fa-calendar"></i>
+                                    Fecha Matrícula
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-content">
+                                    <i class="fas fa-info-circle"></i>
+                                    Estado
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-content">
+                                    <i class="fas fa-comment"></i>
+                                    Observaciones
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-content">
+                                    <i class="fas fa-cogs"></i>
+                                    Acciones
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for matricula, alumno, materia, docente in matriculas %}
+                        <tr class="table-row-modern">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">
+                                        {{ alumno.nombre[0] }}{{ alumno.apellido[0] }}
+                                    </div>
+                                    <div class="student-details">
+                                        <div class="student-name">{{ alumno.nombre }} {{ alumno.apellido }}</div>
+                                        <div class="student-dni">DNI: {{ alumno.dni }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="subject-info">
+                                    <div class="subject-name">{{ materia.nombre }}</div>
+                                    <div class="subject-code">{{ materia.codigo }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="teacher-info">
+                                    <div class="teacher-name">{{ docente.nombre }} {{ docente.apellido }}</div>
+                                    <div class="teacher-specialty">{{ docente.especialidad }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-info">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ matricula.fecha_matricula.strftime('%d/%m/%Y') }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if matricula.estado == 'activa' %}
+                                    <span class="status-badge status-active">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Activa</span>
+                                    </span>
+                                {% elif matricula.estado == 'completada' %}
+                                    <span class="status-badge status-completed">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <span>Completada</span>
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-cancelled">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>Cancelada</span>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="observations">
+                                    {% if matricula.observaciones %}
+                                        <span class="obs-text">{{ matricula.observaciones[:50] }}{% if matricula.observaciones|length > 50 %}...{% endif %}</span>
+                                    {% else %}
+                                        <span class="obs-empty">Sin observaciones</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="actions-modern">
+                                    <div class="dropdown-modern">
+                                        <button class="btn-action btn-state" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-edit"></i>
+                                            <span>Estado</span>
+                                        </button>
+                                        <div class="dropdown-menu-modern">
+                                            <form method="POST" action="{{ url_for('admin_cambiar_estado_matricula', matricula_id=matricula.id) }}">
+                                                <input type="hidden" name="estado" value="activa">
+                                                <button type="submit" class="dropdown-item-modern">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    <span>Activa</span>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('admin_cambiar_estado_matricula', matricula_id=matricula.id) }}">
+                                                <input type="hidden" name="estado" value="completada">
+                                                <button type="submit" class="dropdown-item-modern">
+                                                    <i class="fas fa-graduation-cap"></i>
+                                                    <span>Completada</span>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('admin_cambiar_estado_matricula', matricula_id=matricula.id) }}">
+                                                <input type="hidden" name="estado" value="cancelada">
+                                                <button type="submit" class="dropdown-item-modern">
+                                                    <i class="fas fa-times-circle"></i>
+                                                    <span>Cancelada</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                    <form method="POST" action="{{ url_for('admin_desmatricular_alumno', matricula_id=matricula.id) }}" 
+                                          onsubmit="return confirm('¿Estás seguro de que quieres desmatricular a {{ alumno.nombre }} {{ alumno.apellido }} de {{ materia.nombre }}? Esta acción eliminará todas sus notas en esta materia.')" 
+                                          class="d-inline">
+                                        <button type="submit" class="btn-action btn-danger">
+                                            <i class="fas fa-user-times"></i>
+                                            <span>Desmatricular</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state-modern">
+                <div class="empty-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3 class="empty-title">No hay matrículas registradas</h3>
+                <p class="empty-description">Comienza matriculando alumnos en las materias disponibles para gestionar el sistema académico.</p>
+                <a href="{{ url_for('admin_matricular_alumno') }}" class="btn-modern btn-primary-modern">
+                    <i class="fas fa-plus"></i>
+                    <span>Matricular Primer Alumno</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos Modernos para Matrículas */
+
+/* Header Moderno */
+.page-header-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.title-icon {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+    border-radius: 15px;
+    font-size: 1.5rem;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0.5rem 0 0 0;
+}
+
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary-modern {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary-modern:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+/* Tarjetas de Estadísticas Modernas */
+.stats-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+}
+
+.stats-card-primary::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+.stats-card-success::before { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+.stats-card-info::before { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+.stats-card-warning::before { background: linear-gradient(90deg, #fa709a, #fee140); }
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stats-card-primary .stats-icon { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.stats-card-success .stats-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
+.stats-card-info .stats-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; }
+.stats-card-warning .stats-icon { background: linear-gradient(135deg, #fa709a, #fee140); color: white; }
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.stats-label {
+    color: #718096;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.stats-trend {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: #cbd5e0;
+    font-size: 1.2rem;
+}
+
+/* Tarjeta Moderna */
+.modern-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-header-modern {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    padding: 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.card-subtitle {
+    color: #718096;
+    margin: 0.5rem 0 0 0;
+    font-size: 0.95rem;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    color: #a0aec0;
+    z-index: 1;
+}
+
+.search-box input {
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: white;
+    font-size: 0.9rem;
+    width: 250px;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.card-body-modern {
+    padding: 0;
+}
+
+/* Tabla Moderna */
+.table-container {
+    overflow-x: auto;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.modern-table thead th {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    padding: 1.5rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.th-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.th-content i {
+    color: #667eea;
+    font-size: 0.8rem;
+}
+
+.table-row-modern {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table-row-modern:hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    transform: scale(1.01);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.table-row-modern td {
+    padding: 1.5rem 1rem;
+    vertical-align: middle;
+}
+
+/* Información de Alumno */
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.student-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.student-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.student-dni {
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+/* Información de Materia */
+.subject-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.subject-code {
+    color: #718096;
+    font-size: 0.85rem;
+    background: #f7fafc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 0.25rem;
+}
+
+/* Información de Docente */
+.teacher-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.teacher-specialty {
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+/* Información de Fecha */
+.date-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.date-info i {
+    color: #667eea;
+}
+
+/* Badges de Estado */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+}
+
+.status-completed {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+    color: white;
+}
+
+.status-cancelled {
+    background: linear-gradient(135deg, #f56565, #e53e3e);
+    color: white;
+}
+
+/* Observaciones */
+.obs-text {
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+.obs-empty {
+    color: #a0aec0;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* Acciones Modernas */
+.actions-modern {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-state {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-state:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f56565, #e53e3e);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245, 101, 101, 0.3);
+    color: white;
+}
+
+/* Dropdown Moderno */
+.dropdown-modern {
+    position: relative;
+}
+
+.dropdown-menu-modern {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    min-width: 150px;
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+}
+
+.dropdown-modern:hover .dropdown-menu-modern {
+    display: block;
+}
+
+.dropdown-item-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #4a5568;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.dropdown-item-modern:hover {
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+.dropdown-item-modern i {
+    width: 16px;
+    text-align: center;
+}
+
+/* Estado Vacío Moderno */
+.empty-state-modern {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #718096;
+}
+
+.empty-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 2.5rem;
+    color: #a0aec0;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 1rem;
+}
+
+.empty-description {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .search-box input {
+        width: 100%;
+    }
+    
+    .card-header-modern {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .stats-card {
+        padding: 1.5rem;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+    }
+    
+    .table-row-modern td {
+        padding: 1rem 0.5rem;
+    }
+    
+    .actions-modern {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Inicializar DataTable
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
+        },
+        "pageLength": 25,
+        "order": [[ 3, "desc" ]], // Ordenar por fecha de matrícula
+        "columnDefs": [
+            { "orderable": false, "targets": 6 } // Deshabilitar ordenamiento en columna de acciones
+        ],
+        "dom": '<"top"f>rt<"bottom"lp><"clear">',
+        "initComplete": function() {
+            // Ocultar el search box de DataTable ya que tenemos uno personalizado
+            $('.dataTables_filter').hide();
+        }
+    });
+    
+    // Funcionalidad de búsqueda personalizada
+    $('#searchInput').on('keyup', function() {
+        $('#dataTable').DataTable().search(this.value).draw();
+    });
+    
+    // Animaciones suaves para los botones
+    $('.btn-action').hover(
+        function() {
+            $(this).css('transform', 'translateY(-2px)');
+        },
+        function() {
+            $(this).css('transform', 'translateY(0)');
+        }
+    );
+    
+    // Confirmación mejorada para desmatricular
+    $('form[action*="desmatricular"]').on('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        const button = $(form).find('button[type="submit"]');
+        const originalText = button.html();
+        
+        // Mostrar confirmación moderna
+        if (confirm('¿Estás seguro de que quieres desmatricular a este alumno? Esta acción eliminará todas sus notas en esta materia.')) {
+            button.html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
+            button.prop('disabled', true);
+            
+            // Enviar formulario
+            setTimeout(() => {
+                form.submit();
+            }, 500);
+        }
+    });
+    
+    // Efectos de hover para las tarjetas de estadísticas
+    $('.stats-card').hover(
+        function() {
+            $(this).css('transform', 'translateY(-5px)');
+        },
+        function() {
+            $(this).css('transform', 'translateY(0)');
+        }
+    );
+    
+    // Animación de entrada para las filas de la tabla
+    $('.table-row-modern').each(function(index) {
+        $(this).css({
+            'opacity': '0',
+            'transform': 'translateY(20px)'
+        });
+        
+        setTimeout(() => {
+            $(this).animate({
+                'opacity': '1'
+            }, 300).css('transform', 'translateY(0)');
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}
+

@@ -60,7 +60,7 @@
             <div class="summary-card">
                 <h4>{{ materia.nombre }}</h4>
                 <div class="stat-number">{{ "%.2f"|format(promedio) }}</div>
-                <div class="stat-detail">{{ total_notas }} nota(s) | Docente: {{ docente.username }}</div>
+                <div class="stat-detail">{{ total_notas }} nota(s) | Docente: {{ docente.nombre }} {{ docente.apellido }}</div>
             </div>
             {% endfor %}
         </div>
@@ -90,7 +90,7 @@
                                 <strong>{{ materia.nombre }}</strong><br>
                                 <small class="text-muted">{{ materia.codigo }}</small>
                             </td>
-                            <td>{{ docente.username }}</td>
+                            <td>{{ docente.nombre }} {{ docente.apellido }}</td>
                             <td>{{ nota.tipo_evaluacion }}</td>
                             <td><strong>{{ nota.nota }}</strong></td>
                             <td>

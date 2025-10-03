@@ -1,667 +1,273 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Usuario - Sistema de Notas</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends "admin/base_admin.html" %}
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-        }
+{% block title %}Editar Usuario - Sistema de Notas{% endblock %}
 
-        .admin-dashboard {
-            display: flex;
-            height: 100vh;
-            background: #f8f9fa;
-        }
+{% block content %}
+<div class="page-header">
+    <div class="back-button">
+        <a href="{{ url_for('admin_ver_usuarios') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Usuarios
+        </a>
+    </div>
+    <h1><i class="fas fa-user-edit"></i> Editar Usuario</h1>
+    <p>Modifica la información del usuario seleccionado</p>
+</div>
 
-        .sidebar {
-            width: 280px;
-            background: #ffffff;
-            color: #2c3e50;
-            padding: 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            border-right: 1px solid #e9ecef;
-        }
-
-        .sidebar-header {
-            padding: 30px 25px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-header h2 i {
-            color: #3498db;
-            font-size: 1.5rem;
-        }
-
-        .nav-menu {
-            padding: 20px 0;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            color: #6c757d;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .nav-item:hover {
-            background: #f8f9fa;
-            color: #2c3e50;
-            border-left-color: #3498db;
-        }
-
-        .nav-item.active {
-            background: rgba(52, 152, 219, 0.2);
-            color: #1976d2;
-            border-left-color: #3498db;
-            font-weight: 600;
-        }
-
-        .nav-item i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            background: #f8f9fa;
-        }
-
-        .content-header {
-            margin-bottom: 30px;
-        }
-
-        .content-header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .content-header h1 i {
-            color: #3498db;
-            font-size: 1.8rem;
-        }
-
-        .content-header p {
-            color: #6c757d;
-            font-size: 1.1rem;
-            margin: 0;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .back-btn:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        .usuario-info {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            margin-bottom: 30px;
-        }
-
-        .usuario-info h2 {
-            color: #2c3e50;
-            margin: 0 0 10px 0;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        .usuario-info p {
-            color: #6c757d;
-            margin: 5px 0;
-            font-size: 0.95rem;
-        }
-
-        .usuario-info strong {
-            color: #2c3e50;
-            font-weight: 600;
-        }
-
-        .usuario-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .usuario-avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        .usuario-details h2 {
-            color: #ffffff;
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .usuario-meta {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
-        }
-
-        .tipo-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 8px;
-        }
-
-        .tipo-badge.admin {
-            background: #f8d7da;
-            color: #ff5252;
-        }
-
-        .tipo-badge.docente {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .tipo-badge.alumno {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .form-container {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .form-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .form-header h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .form-header h2 i {
-            color: #3498db;
-            font-size: 1.5rem;
-        }
-
-        .form-header p {
-            color: #6c757d;
-            font-size: 1rem;
-            margin: 0;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #ffffff;
-            outline: none;
-            color: #2c3e50;
-        }
-
-        .form-control:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .form-control:hover {
-            border-color: #3498db;
-        }
-
-        .form-text {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-text i {
-            color: #3498db;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(108, 117, 125, 0.3);
-        }
-
-        .password-toggle {
-            position: relative;
-        }
-
-        .password-toggle-btn {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.8);
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .password-toggle-btn:hover {
-            color: #3498db;
-            background-color: rgba(52, 152, 219, 0.1);
-        }
-
-        .flash-messages {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .flash-message {
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            animation: slideIn 0.3s ease;
-        }
-
-        .flash-success {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-        }
-
-        .flash-error {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .info-section {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-left: 4px solid #3498db;
-        }
-
-        .info-section h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-section p {
-            color: #6c757d;
-            margin: 5px 0;
-        }
-
-        .info-section strong {
-            color: #2c3e50;
-        }
-
-        @media (max-width: 768px) {
-            .admin-dashboard {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
-            
-            .form-container {
-                padding: 30px 20px;
-            }
-            
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            .usuario-header {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="admin-dashboard">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-graduation-cap"></i> Sistema de Notas</h2>
-            </div>
-            
-            <nav class="nav-menu">
-                <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-                <a href="{{ url_for('admin_ver_usuarios') }}" class="nav-item active">
-                    <i class="fas fa-users"></i> Usuarios
-                </a>
-                <a href="{{ url_for('admin_ver_alumnos') }}" class="nav-item">
-                    <i class="fas fa-user-graduate"></i> Alumnos
-                </a>
-                <a href="{{ url_for('admin_ver_materias') }}" class="nav-item">
-                    <i class="fas fa-book"></i> Materias
-                </a>
-                <a href="{{ url_for('admin_ver_notas') }}" class="nav-item">
-                    <i class="fas fa-clipboard-list"></i> Notas
-                </a>
-                <a href="{{ url_for('admin_mi_perfil') }}" class="nav-item">
-                    <i class="fas fa-user"></i> Mi Perfil
-                </a>
-                <a href="{{ url_for('logout') }}" class="nav-item">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                </a>
-            </nav>
+<!-- Información actual del usuario -->
+<div class="content-container">
+    <div class="usuario-header">
+        <div class="usuario-avatar">
+            {{ usuario.username[0].upper() }}
         </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="content-header">
-                <a href="{{ url_for('admin_ver_usuarios') }}" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> Volver a Usuarios
-                </a>
-                <h1><i class="fas fa-user-edit"></i> Editar Usuario</h1>
-                <p>Modifica la información del usuario seleccionado</p>
+        <div class="usuario-details">
+            <h2>{{ usuario.username }}</h2>
+            <div class="usuario-meta">
+                <p><strong>Email:</strong> {{ usuario.email }}</p>
+                <p><strong>ID:</strong> {{ usuario.id }}</p>
+                <p><strong>Fecha de creación:</strong> {{ usuario.fecha_creacion.strftime('%d/%m/%Y') if usuario.fecha_creacion else 'N/A' }}</p>
             </div>
-
-            <!-- Información actual del usuario -->
-            <div class="usuario-info">
-                <div class="usuario-header">
-                    <div class="usuario-avatar">
-                        {{ usuario.username[0].upper() }}
-                    </div>
-                    <div class="usuario-details">
-                        <h2>{{ usuario.username }}</h2>
-                        <div class="usuario-meta">
-                            <p><strong>Email:</strong> {{ usuario.email }}</p>
-                            <p><strong>ID:</strong> {{ usuario.id }}</p>
-                            <p><strong>Fecha de creación:</strong> {{ usuario.fecha_creacion.strftime('%d/%m/%Y') if usuario.fecha_creacion else 'N/A' }}</p>
-                        </div>
-                        <span class="tipo-badge {{ usuario.tipo }}">
-                            {% if usuario.tipo == 'admin' %}
-                                <i class="fas fa-shield-alt"></i> Administrador
-                            {% elif usuario.tipo == 'docente' %}
-                                <i class="fas fa-chalkboard-teacher"></i> Docente
-                            {% elif usuario.tipo == 'alumno' %}
-                                <i class="fas fa-user-graduate"></i> Alumno
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Información adicional -->
-            <div class="info-section">
-                <h3><i class="fas fa-info-circle"></i> Información Importante</h3>
-                <p><strong>Nota:</strong> Al cambiar el tipo de usuario, se modificará el acceso y permisos del mismo.</p>
-                <p><strong>Contraseña:</strong> Si no deseas cambiar la contraseña, deja el campo vacío.</p>
-                <p><strong>Email:</strong> El email debe ser único en el sistema.</p>
-            </div>
-
-            <!-- Formulario de edición -->
-            <div class="form-container">
-                <div class="form-header">
-                    <h2><i class="fas fa-user-edit"></i> Editar Usuario</h2>
-                    <p>Modifica los datos del usuario</p>
-                </div>
-
-                <form method="POST">
-                    <div class="form-group">
-                        <label for="username" class="form-label">
-                            <i class="fas fa-user"></i> Nombre de Usuario
-                        </label>
-                        <input type="text" id="username" name="username" class="form-control" 
-                               value="{{ usuario.username }}" required 
-                               placeholder="Ingresa el nombre de usuario">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email" class="form-label">
-                            <i class="fas fa-envelope"></i> Email
-                        </label>
-                        <input type="email" id="email" name="email" class="form-control" 
-                               value="{{ usuario.email }}" required 
-                               placeholder="Ingresa el email del usuario">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tipo" class="form-label">
-                            <i class="fas fa-user-tag"></i> Tipo de Usuario
-                        </label>
-                        <select id="tipo" name="tipo" class="form-control" required>
-                            <option value="admin" {% if usuario.tipo == 'admin' %}selected{% endif %}>
-                                <i class="fas fa-shield-alt"></i> Administrador
-                            </option>
-                            <option value="docente" {% if usuario.tipo == 'docente' %}selected{% endif %}>
-                                <i class="fas fa-chalkboard-teacher"></i> Docente
-                            </option>
-                            <option value="alumno" {% if usuario.tipo == 'alumno' %}selected{% endif %}>
-                                <i class="fas fa-user-graduate"></i> Alumno
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password" class="form-label">
-                            <i class="fas fa-lock"></i> Nueva Contraseña
-                        </label>
-                        <div class="password-toggle">
-                            <input type="password" id="password" name="password" class="form-control" 
-                                   placeholder="Dejar vacío para mantener la contraseña actual"
-                                   minlength="4">
-                            <button type="button" class="password-toggle-btn" onclick="togglePassword()">
-                                <i class="fas fa-eye" id="passwordIcon"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">
-                            <i class="fas fa-info-circle"></i>
-                            Solo completa este campo si quieres cambiar la contraseña. Mínimo 4 caracteres.
-                        </div>
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
-                        <a href="{{ url_for('admin_ver_usuarios') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Cancelar
-                        </a>
-                    </div>
-                </form>
-            </div>
+            <span class="tipo-badge {{ usuario.tipo }}">
+                {% if usuario.tipo == 'admin' %}
+                    <i class="fas fa-shield-alt"></i> Administrador
+                {% elif usuario.tipo == 'docente' %}
+                    <i class="fas fa-chalkboard-teacher"></i> Docente
+                {% elif usuario.tipo == 'alumno' %}
+                    <i class="fas fa-user-graduate"></i> Alumno
+                {% endif %}
+            </span>
         </div>
     </div>
+</div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">
-                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
+<!-- Información adicional -->
+<div class="content-container">
+    <h3><i class="fas fa-info-circle"></i> Información Importante</h3>
+    <div class="info-notes">
+        <p><strong>Nota:</strong> Al cambiar el tipo de usuario, se modificará el acceso y permisos del mismo.</p>
+        <p><strong>Contraseña:</strong> Si no deseas cambiar la contraseña, deja el campo vacío.</p>
+        <p><strong>Email:</strong> El email debe ser único en el sistema.</p>
+    </div>
+</div>
+
+<!-- Formulario de edición -->
+<div class="content-container">
+    <h3><i class="fas fa-user-edit"></i> Editar Usuario</h3>
+    <p>Modifica los datos del usuario</p>
+    
+    <form method="POST" class="edit-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="username">Nombre de Usuario:</label>
+                <input type="text" id="username" name="username" value="{{ usuario.username }}" required>
             </div>
-        {% endif %}
-    {% endwith %}
-
-    <script>
-        // Función para mostrar/ocultar contraseña
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const passwordIcon = document.getElementById('passwordIcon');
             
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                passwordIcon.classList.remove('fa-eye');
-                passwordIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                passwordIcon.classList.remove('fa-eye-slash');
-                passwordIcon.classList.add('fa-eye');
-            }
-        }
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="{{ usuario.email }}" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="tipo">Tipo de Usuario:</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="admin" {% if usuario.tipo == 'admin' %}selected{% endif %}>Administrador</option>
+                    <option value="docente" {% if usuario.tipo == 'docente' %}selected{% endif %}>Docente</option>
+                    <option value="alumno" {% if usuario.tipo == 'alumno' %}selected{% endif %}>Alumno</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Nueva Contraseña (opcional):</label>
+                <input type="password" id="password" name="password" placeholder="Deja vacío para mantener la actual">
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+            <a href="{{ url_for('admin_ver_usuarios') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
 
-        // Auto-hide flash messages
-        document.addEventListener('DOMContentLoaded', function() {
-            const messages = document.querySelectorAll('.flash-message');
-            messages.forEach(function(message) {
-                setTimeout(function() {
-                    message.style.animation = 'slideIn 0.3s ease reverse';
-                    setTimeout(function() {
-                        message.remove();
-                    }, 300);
-                }, 5000);
-            });
-        });
-    </script>
-</body>
-</html>
+{% block extra_css %}
+<style>
+.back-button {
+    margin-bottom: 20px;
+}
+
+.usuario-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.usuario-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.usuario-details h2 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+.usuario-meta {
+    margin-bottom: 15px;
+}
+
+.usuario-meta p {
+    margin: 5px 0;
+    color: #6c757d;
+}
+
+.tipo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tipo-badge.admin {
+    background: #dc3545;
+    color: white;
+}
+
+.tipo-badge.docente {
+    background: #28a745;
+    color: white;
+}
+
+.tipo-badge.alumno {
+    background: #17a2b8;
+    color: white;
+}
+
+.info-notes {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.info-notes p {
+    margin: 8px 0;
+    color: #1565c0;
+}
+
+.edit-form {
+    max-width: 800px;
+    margin-top: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .usuario-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

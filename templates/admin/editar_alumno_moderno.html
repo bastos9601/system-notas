@@ -1,766 +1,326 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Alumno - Sistema de Notas</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-        }
-
-        .admin-dashboard {
-            display: flex;
-            height: 100vh;
-            background: #f8f9fa;
-        }
-
-        .sidebar {
-            width: 280px;
-            background: #ffffff;
-            color: #2c3e50;
-            padding: 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            border-right: 1px solid #e9ecef;
-        }
-
-        .sidebar-header {
-            padding: 30px 25px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-header h2 i {
-            color: #3498db;
-            font-size: 1.5rem;
-        }
-
-        .nav-menu {
-            padding: 20px 0;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            color: #6c757d;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .nav-item:hover {
-            background: #f8f9fa;
-            color: #2c3e50;
-            border-left-color: #3498db;
-        }
-
-        .nav-item.active {
-            background: rgba(52, 152, 219, 0.2);
-            color: #1976d2;
-            border-left-color: #3498db;
-            font-weight: 600;
-        }
-
-        .nav-item i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            background: #f8f9fa;
-        }
-
-        .content-header {
-            margin-bottom: 30px;
-        }
-
-        .content-header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .content-header h1 i {
-            color: #3498db;
-            font-size: 1.8rem;
-        }
-
-        .content-header p {
-            color: #6c757d;
-            font-size: 1.1rem;
-            margin: 0;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .back-btn:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        .alumno-info {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            margin-bottom: 30px;
-        }
-
-        .alumno-info h2 {
-            color: #2c3e50;
-            margin: 0 0 10px 0;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        .alumno-info p {
-            color: #6c757d;
-            margin: 5px 0;
-            font-size: 0.95rem;
-        }
-
-        .alumno-info strong {
-            color: #2c3e50;
-            font-weight: 600;
-        }
-
-        .alumno-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .alumno-avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        .alumno-details h2 {
-            color: #ffffff;
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .alumno-meta {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
-        }
-
-        .alumno-meta p {
-            margin: 3px 0;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 8px;
-        }
-
-        .status-badge.con-usuario {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-badge.sin-usuario {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .form-container {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .form-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .form-header h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .form-header h2 i {
-            color: #3498db;
-            font-size: 1.5rem;
-        }
-
-        .form-header p {
-            color: #6c757d;
-            font-size: 1rem;
-            margin: 0;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 0;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #ffffff;
-            outline: none;
-            color: #2c3e50;
-        }
-
-        .form-control:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .form-control:hover {
-            border-color: #3498db;
-        }
-
-        .form-text {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-text i {
-            color: #3498db;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(108, 117, 125, 0.3);
-        }
-
-        .flash-messages {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .flash-message {
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            animation: slideIn 0.3s ease;
-        }
-
-        .flash-success {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-        }
-
-        .flash-error {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .info-section {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-left: 4px solid #3498db;
-        }
-
-        .info-section h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-section p {
-            color: #6c757d;
-            margin: 5px 0;
-        }
-
-        .info-section strong {
-            color: #2c3e50;
-        }
-
-        .usuario-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .usuario-link:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        .usuario-link.sin-usuario {
-            background: #f39c12;
-        }
-
-        .usuario-link.sin-usuario:hover {
-            background: #e67e22;
-        }
-
-        @media (max-width: 768px) {
-            .admin-dashboard {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
-            
-            .form-container {
-                padding: 30px 20px;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            .alumno-header {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="admin-dashboard">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-graduation-cap"></i> Sistema de Notas</h2>
-            </div>
-            
-            <nav class="nav-menu">
-                <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-                <a href="{{ url_for('admin_ver_usuarios') }}" class="nav-item">
-                    <i class="fas fa-users"></i> Usuarios
-                </a>
-                <a href="{{ url_for('admin_ver_alumnos') }}" class="nav-item active">
-                    <i class="fas fa-user-graduate"></i> Alumnos
-                </a>
-                <a href="{{ url_for('admin_ver_materias') }}" class="nav-item">
-                    <i class="fas fa-book"></i> Materias
-                </a>
-                <a href="{{ url_for('admin_ver_notas') }}" class="nav-item">
-                    <i class="fas fa-clipboard-list"></i> Notas
-                </a>
-                <a href="{{ url_for('admin_mi_perfil') }}" class="nav-item">
-                    <i class="fas fa-user"></i> Mi Perfil
-                </a>
-                <a href="{{ url_for('logout') }}" class="nav-item">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                </a>
-            </nav>
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Editar Alumno - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="back-button">
+        <a href="{{ url_for('admin_ver_alumnos') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Alumnos
+        </a>
+    </div>
+    <h1><i class="fas fa-user-edit"></i> Editar Alumno</h1>
+    <p>Modifica la información del alumno seleccionado</p>
+</div>
+
+<!-- Información actual del alumno -->
+<div class="content-container">
+    <div class="alumno-header">
+        <div class="alumno-avatar">
+            {{ (alumno.nombre[0] + alumno.apellido[0])|upper }}
         </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="content-header">
-                <a href="{{ url_for('admin_ver_alumnos') }}" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> Volver a Alumnos
-                </a>
-                <h1><i class="fas fa-user-edit"></i> Editar Alumno</h1>
-                <p>Modifica la información del alumno seleccionado</p>
-            </div>
-
-            <!-- Información actual del alumno -->
-            <div class="alumno-info">
-                <div class="alumno-header">
-                    <div class="alumno-avatar">
-                        {{ (alumno.nombre[0] + alumno.apellido[0])|upper }}
-                    </div>
-                    <div class="alumno-details">
-                        <h2>{{ alumno.nombre }} {{ alumno.apellido }}</h2>
-                        <div class="alumno-meta">
-                            <p><strong>DNI:</strong> {{ alumno.dni }}</p>
-                            <p><strong>ID:</strong> {{ alumno.id }}</p>
-                            <p><strong>Fecha de registro:</strong> {{ alumno.fecha_registro.strftime('%d/%m/%Y') if alumno.fecha_registro else 'N/A' }}</p>
-                            {% if alumno.email %}
-                                <p><strong>Email:</strong> {{ alumno.email }}</p>
-                            {% endif %}
-                            {% if alumno.telefono %}
-                                <p><strong>Teléfono:</strong> {{ alumno.telefono }}</p>
-                            {% endif %}
-                        </div>
-                        <span class="status-badge {{ 'con-usuario' if alumno.usuario_id else 'sin-usuario' }}">
-                            {% if alumno.usuario_id %}
-                                <i class="fas fa-check-circle"></i> Con Usuario
-                            {% else %}
-                                <i class="fas fa-exclamation-triangle"></i> Sin Usuario
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-                
-                {% if alumno.usuario_id %}
-                    <a href="{{ url_for('admin_ver_usuarios') }}" class="usuario-link">
-                        <i class="fas fa-user"></i> Ver Usuario Asociado
-                    </a>
-                {% else %}
-                    <a href="{{ url_for('crear_usuario_alumno') }}" class="usuario-link sin-usuario">
-                        <i class="fas fa-user-plus"></i> Crear Usuario para este Alumno
-                    </a>
+        <div class="alumno-details">
+            <h2>{{ alumno.nombre }} {{ alumno.apellido }}</h2>
+            <div class="alumno-meta">
+                <p><strong>DNI:</strong> {{ alumno.dni }}</p>
+                <p><strong>ID:</strong> {{ alumno.id }}</p>
+                <p><strong>Fecha de registro:</strong> {{ alumno.fecha_registro.strftime('%d/%m/%Y') if alumno.fecha_registro else 'N/A' }}</p>
+                {% if alumno.email %}
+                    <p><strong>Email:</strong> {{ alumno.email }}</p>
+                {% endif %}
+                {% if alumno.telefono %}
+                    <p><strong>Teléfono:</strong> {{ alumno.telefono }}</p>
                 {% endif %}
             </div>
-
-            <!-- Información adicional -->
-            <div class="info-section">
-                <h3><i class="fas fa-info-circle"></i> Información Importante</h3>
-                <p><strong>DNI:</strong> Debe ser único en el sistema. No se puede duplicar.</p>
-                <p><strong>Email y Teléfono:</strong> Son campos opcionales pero recomendados para contacto.</p>
-                <p><strong>Ciclo:</strong> Indica el nivel académico del alumno.</p>
-                <p><strong>Usuario:</strong> Si el alumno no tiene usuario asociado, puedes crear uno desde el enlace superior.</p>
-            </div>
-
-            <!-- Formulario de edición -->
-            <div class="form-container">
-                <div class="form-header">
-                    <h2><i class="fas fa-user-edit"></i> Editar Alumno</h2>
-                    <p>Modifica los datos del alumno</p>
-                </div>
-
-                <form method="POST">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="dni" class="form-label">
-                                <i class="fas fa-id-card"></i> DNI
-                            </label>
-                            <input type="text" id="dni" name="dni" class="form-control" 
-                                   value="{{ alumno.dni }}" required 
-                                   placeholder="Ingresa el DNI del alumno">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="nombre" class="form-label">
-                                <i class="fas fa-user"></i> Nombre
-                            </label>
-                            <input type="text" id="nombre" name="nombre" class="form-control" 
-                                   value="{{ alumno.nombre }}" required 
-                                   placeholder="Ingresa el nombre del alumno">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="apellido" class="form-label">
-                                <i class="fas fa-user"></i> Apellido
-                            </label>
-                            <input type="text" id="apellido" name="apellido" class="form-control" 
-                                   value="{{ alumno.apellido }}" required 
-                                   placeholder="Ingresa el apellido del alumno">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email" class="form-label">
-                                <i class="fas fa-envelope"></i> Email (Opcional)
-                            </label>
-                            <input type="email" id="email" name="email" class="form-control" 
-                                   value="{{ alumno.email or '' }}" 
-                                   placeholder="Ingresa el email del alumno">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="telefono" class="form-label">
-                                <i class="fas fa-phone"></i> Teléfono (Opcional)
-                            </label>
-                            <input type="text" id="telefono" name="telefono" class="form-control" 
-                                   value="{{ alumno.telefono or '' }}" 
-                                   placeholder="Ingresa el teléfono del alumno">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="ciclo" class="form-label">
-                                <i class="fas fa-graduation-cap"></i> Ciclo
-                            </label>
-                            <select id="ciclo" name="ciclo" class="form-control" required>
-                                <option value="">Seleccionar ciclo</option>
-                                <option value="primero" {% if alumno.ciclo == 'primero' %}selected{% endif %}>Primer Ciclo</option>
-                                <option value="segundo" {% if alumno.ciclo == 'segundo' %}selected{% endif %}>Segundo Ciclo</option>
-                                <option value="tercero" {% if alumno.ciclo == 'tercero' %}selected{% endif %}>Tercer Ciclo</option>
-                                <option value="cuarto" {% if alumno.ciclo == 'cuarto' %}selected{% endif %}>Cuarto Ciclo</option>
-                                <option value="quinto" {% if alumno.ciclo == 'quinto' %}selected{% endif %}>Quinto Ciclo</option>
-                                <option value="sexto" {% if alumno.ciclo == 'sexto' %}selected{% endif %}>Sexto Ciclo</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
-                        <a href="{{ url_for('admin_ver_alumnos') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Cancelar
-                        </a>
-                    </div>
-                </form>
-            </div>
+            <span class="status-badge {{ 'con-usuario' if alumno.usuario_id else 'sin-usuario' }}">
+                {% if alumno.usuario_id %}
+                    <i class="fas fa-check-circle"></i> Con Usuario
+                {% else %}
+                    <i class="fas fa-exclamation-triangle"></i> Sin Usuario
+                {% endif %}
+            </span>
         </div>
     </div>
+    
+    {% if alumno.usuario_id %}
+        <div class="usuario-link-container">
+            <a href="{{ url_for('admin_ver_usuarios') }}" class="btn btn-info">
+                <i class="fas fa-user"></i> Ver Usuario Asociado
+            </a>
+        </div>
+    {% else %}
+        <div class="usuario-link-container">
+            <a href="{{ url_for('crear_usuario_alumno') }}" class="btn btn-warning">
+                <i class="fas fa-user-plus"></i> Crear Usuario para este Alumno
+            </a>
+        </div>
+    {% endif %}
+</div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">
-                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
+<!-- Formulario de edición -->
+<div class="content-container">
+    <h3><i class="fas fa-user-edit"></i> Editar Alumno</h3>
+    <p>Modifica los datos del alumno</p>
+    
+    <form method="POST" class="edit-form">
+        <div class="form-section">
+            <h4><i class="fas fa-id-card"></i> Información Personal</h4>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="dni">DNI:</label>
+                    <input type="text" id="dni" name="dni" value="{{ alumno.dni }}" required maxlength="8" pattern="[0-9]{8}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="{{ alumno.fecha_nacimiento.strftime('%Y-%m-%d') if alumno.fecha_nacimiento else '' }}">
+                </div>
             </div>
-        {% endif %}
-    {% endwith %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" value="{{ alumno.nombre }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apellido">Apellido:</label>
+                    <input type="text" id="apellido" name="apellido" value="{{ alumno.apellido }}" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h4><i class="fas fa-envelope"></i> Información de Contacto</h4>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="{{ alumno.email or '' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="tel" id="telefono" name="telefono" value="{{ alumno.telefono or '' }}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="direccion">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" value="{{ alumno.direccion or '' }}">
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+            <a href="{{ url_for('admin_ver_alumnos') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
 
-    <script>
-        // Auto-hide flash messages
-        document.addEventListener('DOMContentLoaded', function() {
-            const messages = document.querySelectorAll('.flash-message');
-            messages.forEach(function(message) {
-                setTimeout(function() {
-                    message.style.animation = 'slideIn 0.3s ease reverse';
-                    setTimeout(function() {
-                        message.remove();
-                    }, 300);
-                }, 5000);
-            });
+{% block extra_css %}
+<style>
+.back-button {
+    margin-bottom: 20px;
+}
 
-            // Validación del formulario
-            const form = document.querySelector('form');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    const dni = document.getElementById('dni').value.trim();
-                    const nombre = document.getElementById('nombre').value.trim();
-                    const apellido = document.getElementById('apellido').value.trim();
-                    const email = document.getElementById('email').value.trim();
-                    const ciclo = document.getElementById('ciclo').value;
+.alumno-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+}
 
-                    // Validar campos requeridos
-                    if (!dni) {
-                        e.preventDefault();
-                        alert('Por favor, ingresa el DNI del alumno');
-                        document.getElementById('dni').focus();
-                        return;
-                    }
+.alumno-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
 
-                    if (!nombre) {
-                        e.preventDefault();
-                        alert('Por favor, ingresa el nombre del alumno');
-                        document.getElementById('nombre').focus();
-                        return;
-                    }
+.alumno-details h2 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
 
-                    if (!apellido) {
-                        e.preventDefault();
-                        alert('Por favor, ingresa el apellido del alumno');
-                        document.getElementById('apellido').focus();
-                        return;
-                    }
+.alumno-meta {
+    margin-bottom: 15px;
+}
 
-                    if (!ciclo) {
-                        e.preventDefault();
-                        alert('Por favor, selecciona el ciclo del alumno');
-                        document.getElementById('ciclo').focus();
-                        return;
-                    }
+.alumno-meta p {
+    margin: 5px 0;
+    color: #6c757d;
+}
 
-                    // Validar DNI (solo números)
-                    if (!/^\d+$/.test(dni)) {
-                        e.preventDefault();
-                        alert('El DNI debe contener solo números');
-                        document.getElementById('dni').focus();
-                        return;
-                    }
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
-                    // Validar email si se proporciona
-                    if (email && !isValidEmail(email)) {
-                        e.preventDefault();
-                        alert('Por favor, ingresa un email válido');
-                        document.getElementById('email').focus();
-                        return;
-                    }
+.status-badge.con-usuario {
+    background: #28a745;
+    color: white;
+}
 
-                    // Mostrar mensaje de confirmación
-                    if (confirm('¿Estás seguro de que quieres guardar los cambios?')) {
-                        // El formulario se enviará normalmente
-                    } else {
-                        e.preventDefault();
-                    }
-                });
-            }
+.status-badge.sin-usuario {
+    background: #ffc107;
+    color: #212529;
+}
 
-            // Función para validar email
-            function isValidEmail(email) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email);
-            }
-        });
-    </script>
-</body>
-</html>
+.usuario-link-container {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.edit-form {
+    max-width: 800px;
+    margin-top: 20px;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.form-section h4 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .alumno-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

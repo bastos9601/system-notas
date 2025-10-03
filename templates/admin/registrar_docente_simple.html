@@ -1,0 +1,326 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Registrar Docente - Sistema de Notas{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1><i class="fas fa-chalkboard-teacher"></i> Registrar Nuevo Docente</h1>
+    <p>Registra un nuevo docente en el sistema</p>
+</div>
+
+<div class="form-container">
+    <form method="POST">
+        <div class="form-section">
+            <h3><i class="fas fa-id-card"></i> Información Personal</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="dni">DNI *</label>
+                    <input type="text" id="dni" name="dni" class="form-control" required 
+                           placeholder="8 dígitos sin puntos ni guiones" maxlength="8" pattern="[0-9]{8}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
+                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nombre">Nombre *</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apellido">Apellido *</label>
+                    <input type="text" id="apellido" name="apellido" class="form-control" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-phone"></i> Información de Contacto</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" name="telefono" class="form-control" 
+                           placeholder="Ej: +51 999 999 999">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="direccion">Dirección</label>
+                <input type="text" id="direccion" name="direccion" class="form-control" 
+                       placeholder="Dirección completa del docente">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-graduation-cap"></i> Información Académica</h3>
+            
+            <div class="form-group">
+                <label for="especialidad">Especialidad *</label>
+                <select id="especialidad" name="especialidad" class="form-control" required>
+                    <option value="">Selecciona una especialidad</option>
+                    
+                    <option value="Programación">Programación</option>
+                    <option value="Base de Datos">Base de Datos</option>
+                    <option value="Redes">Redes</option>
+                    <option value="Sistemas Operativos">Sistemas Operativos</option>
+                    <option value="Desarrollo Web">Desarrollo Web</option>
+                    <option value="Otra">Otra</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="especialidad_personalizada">Especialidad Personalizada</label>
+                <input type="text" id="especialidad_personalizada" name="especialidad_personalizada" 
+                       class="form-control" placeholder="Especifica tu especialidad si seleccionaste 'Otra'">
+                <small class="form-text">Solo completa este campo si seleccionaste "Otra" en especialidad</small>
+            </div>
+        </div>
+
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Registrar Docente
+            </button>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+.content-header {
+    background: #ffffff;
+    padding: 30px 40px;
+    border-bottom: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.content-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.content-header h1 i {
+    color: #3498db;
+}
+
+.content-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.form-container {
+    padding: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 1px solid #e9ecef;
+}
+
+.form-section h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.form-section h3 i {
+    color: #3498db;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.form-control {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #ffffff;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-control:hover {
+    border-color: #bdc3c7;
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+.form-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 2px solid #f8f9fa;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+}
+
+/* Animación para el campo de especialidad personalizada */
+#especialidad_personalizada {
+    display: none;
+    transition: all 0.3s ease;
+}
+
+#especialidad_personalizada.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-container {
+        padding: 20px;
+    }
+    
+    .content-header {
+        padding: 20px;
+    }
+}
+</style>
+
+<script>
+// Mostrar/ocultar campo de especialidad personalizada
+document.addEventListener('DOMContentLoaded', function() {
+    const especialidadSelect = document.getElementById('especialidad');
+    const especialidadPersonalizada = document.getElementById('especialidad_personalizada');
+    
+    especialidadSelect.addEventListener('change', function() {
+        if (this.value === 'Otra') {
+            especialidadPersonalizada.style.display = 'block';
+            especialidadPersonalizada.classList.add('show');
+            especialidadPersonalizada.required = true;
+        } else {
+            especialidadPersonalizada.style.display = 'none';
+            especialidadPersonalizada.classList.remove('show');
+            especialidadPersonalizada.required = false;
+            especialidadPersonalizada.value = '';
+        }
+    });
+    
+    
+    // Validación de DNI
+    const dniInput = document.getElementById('dni');
+    dniInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length > 8) {
+            this.value = this.value.slice(0, 8);
+        }
+    });
+});
+</script>
+{% endblock %}

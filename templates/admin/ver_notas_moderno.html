@@ -72,9 +72,9 @@
             <label for="filtroNota">Rango de Nota:</label>
             <select id="filtroNota" class="form-control">
                 <option value="">Todas las notas</option>
-                <option value="0-5">0 - 5 (Reprobado)</option>
-                <option value="5-7">5 - 7 (Regular)</option>
-                <option value="7-10">7 - 10 (Bueno)</option>
+                <option value="5-9">5 - 9 (Desaprobado)</option>
+                <option value="10-12">10 - 12 (Recuperación)</option>
+                <option value="13-20">13 - 20 (Aprobado)</option>
             </select>
         </div>
     </div>
@@ -134,16 +134,18 @@
                         {% endif %}
                     </td>
                     <td class="text-center">
-                        <span class="nota-badge nota-{{ 'aprobado' if nota.nota >= 7 else 'reprobado' }}">
+                        <span class="nota-badge nota-{{ 'aprobado' if nota.nota >= 13 else 'recuperacion' if nota.nota >= 10 else 'desaprobado' }}">
                             {{ nota.nota }}
                         </span>
                     </td>
                     <td>
-                        <span class="status-badge status-{{ 'aprobado' if nota.nota >= 7 else 'reprobado' }}">
-                            {% if nota.nota >= 7 %}
+                        <span class="status-badge status-{{ 'aprobado' if nota.nota >= 13 else 'recuperacion' if nota.nota >= 10 else 'desaprobado' }}">
+                            {% if nota.nota >= 13 %}
                                 <i class="fas fa-check"></i> Aprobado
+                            {% elif nota.nota >= 10 %}
+                                <i class="fas fa-exclamation"></i> Recuperación
                             {% else %}
-                                <i class="fas fa-times"></i> Reprobado
+                                <i class="fas fa-times"></i> Desaprobado
                             {% endif %}
                         </span>
                     </td>
@@ -213,7 +215,12 @@
     color: #155724;
 }
 
-.nota-reprobado {
+.nota-recuperacion {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.nota-desaprobado {
     background: #f8d7da;
     color: #721c24;
 }
@@ -235,7 +242,12 @@
     color: #155724;
 }
 
-.status-reprobado {
+.status-recuperacion {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-desaprobado {
     background: #f8d7da;
     color: #721c24;
 }
