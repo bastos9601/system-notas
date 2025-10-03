@@ -71,7 +71,9 @@ def main():
             debug=True,
             host='0.0.0.0',  # Permite acceso desde otros dispositivos
             port=5000,
-            threaded=True    # Mejor rendimiento
+            threaded=True,   # Mejor rendimiento
+            use_reloader=True,  # Auto-reload cuando cambien los archivos
+            use_debugger=True   # Debugger integrado
         )
     except KeyboardInterrupt:
         print("\n🛑 Servidor detenido por el usuario")

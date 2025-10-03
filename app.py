@@ -27,6 +27,22 @@ def clear_flash_messages():
     """Limpia todos los mensajes flash de la sesión"""
     get_flashed_messages()
 
+# Función auxiliar para verificar estado del docente
+def verificar_estado_docente():
+    """Verifica si el docente actual está activo"""
+    if session.get('tipo') == 'docente':
+        usuario = Usuario.query.get(session.get('user_id'))
+        if usuario and usuario.docente:
+            if usuario.docente.estado == 'inactivo':
+                session.clear()
+                flash('Tu cuenta de docente está inactiva. Contacta al administrador para reactivarla.', 'error')
+                return False
+            elif usuario.docente.estado == 'suspendido':
+                session.clear()
+                flash('Tu cuenta de docente está suspendida. Contacta al administrador para más información.', 'error')
+                return False
+    return True
+
 # Función auxiliar para convertir números de ciclo a texto
 def convertir_ciclo_a_texto(ciclo):
     """Convierte números de ciclo a texto y normaliza a minúsculas"""
@@ -137,9 +153,27 @@ def login():
         usuario = Usuario.query.filter_by(username=username).first()
         
         if usuario and check_password_hash(usuario.password_hash, password):
+            # Verificar si es un docente y si está activo
+            if usuario.tipo == 'docente':
+                docente = Docente.query.filter_by(usuario_id=usuario.id).first()
+                if docente and docente.estado == 'inactivo':
+                    flash('Tu cuenta de docente está inactiva. Contacta al administrador para reactivarla.', 'error')
+                    return render_template('login_moderno.html')
+                elif docente and docente.estado == 'suspendido':
+                    flash('Tu cuenta de docente está suspendida. Contacta al administrador para más información.', 'error')
+                    return render_template('login_moderno.html')
+            
+            # Si todo está bien, crear la sesión
             session['user_id'] = usuario.id
             session['username'] = usuario.username
             session['tipo'] = usuario.tipo
+            
+            # Actualizar última actividad si es docente
+            if usuario.tipo == 'docente':
+                docente = Docente.query.filter_by(usuario_id=usuario.id).first()
+                if docente:
+                    docente.fecha_ultima_actividad = datetime.utcnow()
+                    db.session.commit()
             
             if usuario.tipo == 'admin':
                 return redirect(url_for('admin_dashboard'))
@@ -1161,6 +1195,10 @@ def docente_dashboard():
     if not session.get('user_id') or session.get('tipo') != 'docente':
         return redirect(url_for('login'))
     
+    # Verificar estado del docente
+    if not verificar_estado_docente():
+        return redirect(url_for('login'))
+    
     # Obtener el docente asociado al usuario
     usuario = Usuario.query.get(session['user_id'])
     if not usuario or not usuario.docente:
@@ -1181,6 +1219,10 @@ def docente_dashboard():
 @app.route('/docente/agregar_nota', methods=['GET', 'POST'])
 def agregar_nota():
     if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    # Verificar estado del docente
+    if not verificar_estado_docente():
         return redirect(url_for('login'))
     
     # Obtener el docente asociado al usuario
@@ -1223,6 +1265,10 @@ def agregar_nota():
 @app.route('/docente/ver_notas')
 def docente_ver_notas():
     if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    # Verificar estado del docente
+    if not verificar_estado_docente():
         return redirect(url_for('login'))
     
     # Obtener el docente asociado al usuario
@@ -1279,6 +1325,10 @@ def editar_nota(nota_id):
     if not session.get('user_id') or session.get('tipo') != 'docente':
         return redirect(url_for('login'))
     
+    # Verificar estado del docente
+    if not verificar_estado_docente():
+        return redirect(url_for('login'))
+    
     # Obtener el docente asociado al usuario
     usuario = Usuario.query.get(session['user_id'])
     if not usuario or not usuario.docente:
@@ -1325,6 +1375,10 @@ def eliminar_nota(nota_id):
     if not session.get('user_id') or session.get('tipo') != 'docente':
         return redirect(url_for('login'))
     
+    # Verificar estado del docente
+    if not verificar_estado_docente():
+        return redirect(url_for('login'))
+    
     # Obtener el docente asociado al usuario
     usuario = Usuario.query.get(session['user_id'])
     if not usuario or not usuario.docente:
@@ -1357,6 +1411,10 @@ def eliminar_nota(nota_id):
 def publicar_nota(nota_id):
     """Publicar una nota para que el alumno pueda verla"""
     if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    # Verificar estado del docente
+    if not verificar_estado_docente():
         return redirect(url_for('login'))
     
     # Obtener el docente asociado al usuario
@@ -1394,6 +1452,10 @@ def despublicar_nota(nota_id):
     if not session.get('user_id') or session.get('tipo') != 'docente':
         return redirect(url_for('login'))
     
+    # Verificar estado del docente
+    if not verificar_estado_docente():
+        return redirect(url_for('login'))
+    
     # Obtener el docente asociado al usuario
     usuario = Usuario.query.get(session['user_id'])
     if not usuario or not usuario.docente:
@@ -1428,6 +1490,10 @@ def docente_ver_alumnos():
     if not session.get('user_id') or session.get('tipo') != 'docente':
         return redirect(url_for('login'))
     
+    # Verificar estado del docente
+    if not verificar_estado_docente():
+        return redirect(url_for('login'))
+    
     # Obtener todos los alumnos ordenados por fecha de registro
     alumnos = Alumno.query.order_by(Alumno.fecha_registro.desc()).all()
     
@@ -1445,6 +1511,10 @@ def docente_ver_alumnos():
 @app.route('/docente/ver_materias')
 def docente_ver_materias():
     if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    # Verificar estado del docente
+    if not verificar_estado_docente():
         return redirect(url_for('login'))
     
     # Obtener el docente asociado al usuario
@@ -1480,6 +1550,10 @@ def docente_ver_materias():
 @app.route('/docente/ver_notas_materia/<int:materia_id>')
 def docente_ver_notas_materia(materia_id):
     if not session.get('user_id') or session.get('tipo') != 'docente':
+        return redirect(url_for('login'))
+    
+    # Verificar estado del docente
+    if not verificar_estado_docente():
         return redirect(url_for('login'))
     
     # Obtener el docente asociado al usuario
@@ -1863,6 +1937,14 @@ init_db()
 if __name__ == '__main__':
     # Configuración para desarrollo local
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV') == 'development'
+    debug = os.environ.get('FLASK_ENV') == 'development' or os.environ.get('FLASK_DEBUG') == '1'
     
-    app.run(debug=debug, host='0.0.0.0', port=port)
+    # Habilitar auto-reload para desarrollo
+    app.run(
+        debug=debug, 
+        host='0.0.0.0', 
+        port=port,
+        use_reloader=True,  # Auto-reload cuando cambien los archivos
+        use_debugger=True,  # Debugger integrado
+        threaded=True       # Mejor rendimiento
+    )
